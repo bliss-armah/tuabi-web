@@ -15,6 +15,7 @@ import {
   Phone,
 } from "lucide-react";
 import mockup from "./assets/mockup.svg";
+import whatsapp from "./assets/whatsappImage.png";
 
 function App() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -212,17 +213,17 @@ function App() {
               <div className="flex flex-col sm:flex-row gap-4">
                 <button
                   onClick={() => scrollToSection("contact")}
-                  className="bg-[#1E3A8A] text-white px-8 py-3 rounded-lg poppins-medium hover:bg-[#1E40AF] transition-colors duration-200 text-lg"
+                  className="cursor-pointer bg-[#1E3A8A] text-white px-8 py-3 rounded-lg poppins-medium hover:bg-[#1E40AF] transition-colors duration-200 text-lg"
                 >
                   Contact Us
                 </button>
                 <a
-                  href="https://wa.me/yourphonenumber"
+                  href="https://wa.me/233245289983"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="bg-green-500 text-white px-8 py-3 rounded-lg poppins-medium hover:bg-green-600 transition-colors duration-200 text-lg flex items-center justify-center gap-2"
+                  className="border border-green-500 text-gray-900 px-8 py-3 rounded-lg poppins-medium hover:bg-indigo-100 transition-colors duration-200 text-lg flex items-center justify-center gap-2"
                 >
-                  <MessageCircle size={20} />
+                  <img src={whatsapp} alt="whatsapp" className="w-10 h-10" />
                   WhatsApp Us
                 </a>
               </div>
@@ -313,8 +314,6 @@ function App() {
               >
                 <DollarSign size={24} />
               </motion.div>
-
-             
             </motion.div>
           </div>
         </div>
@@ -526,13 +525,13 @@ function App() {
                 <div className="flex items-center space-x-3">
                   <Mail size={20} className="text-[#1E3A8A]" />
                   <span className="text-gray-600 roboto-regular">
-                    hello@tuabi.com
+                    tuabi@gmail.com
                   </span>
                 </div>
                 <div className="flex items-center space-x-3">
                   <Phone size={20} className="text-[#1E3A8A]" />
                   <span className="text-gray-600 roboto-regular">
-                    +1 (555) 123-4567
+                    +233 (24) 528-9983
                   </span>
                 </div>
               </div>
@@ -680,7 +679,7 @@ function App() {
 
       {/* WhatsApp Floating Button */}
       <motion.a
-        href="https://wa.me/yourphonenumber"
+        href="https://wa.me/0245289983"
         target="_blank"
         rel="noopener noreferrer"
         initial={{ scale: 0 }}
