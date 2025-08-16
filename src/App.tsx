@@ -311,7 +311,7 @@ function App() {
                 transition={{ duration: 2, repeat: Infinity }}
                 className="absolute -top-4 -right-4 bg-[#1E3A8A] text-white p-3 rounded-full shadow-lg"
               >
-                <span className="text-2xl font-bold text-[#1E3A8A]">₵</span>
+                <span className="text-2xl font-bold">₵</span>
               </motion.div>
             </motion.div>
           </div>
