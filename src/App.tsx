@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion, useScroll, useTransform } from "framer-motion";
 import {
-  DollarSign,
   TrendingUp,
   Bell,
   Shield,
@@ -14,7 +13,7 @@ import {
   Mail,
   Phone,
 } from "lucide-react";
-import mockup from "./assets/mockup.svg";
+import mockup from "./assets/mockimage.svg";
 import whatsapp from "./assets/whatsappImage.png";
 
 function App() {
@@ -203,7 +202,7 @@ function App() {
               transition={{ duration: 0.8 }}
             >
               <h1 className="text-4xl md:text-6xl font-bold text-gray-900 poppins-bold mb-6">
-                Track Debts Easily.
+                Track Debts in Cedis.
                 <span className="text-[#1E3A8A] block">Get Paid Faster.</span>
               </h1>
               <p className="text-xl text-gray-600 roboto-regular mb-8 leading-relaxed">
@@ -256,7 +255,7 @@ function App() {
                     </div>
                     <div className="text-right">
                       <p className="font-bold text-green-600 poppins-bold">
-                        $200
+                        ₵200
                       </p>
                       <p className="text-xs text-green-600 roboto-regular">
                         Paid
@@ -275,7 +274,7 @@ function App() {
                     </div>
                     <div className="text-right">
                       <p className="font-bold text-yellow-600 poppins-bold">
-                        $45
+                        ₵45
                       </p>
                       <p className="text-xs text-yellow-600 roboto-regular">
                         Pending
@@ -294,7 +293,7 @@ function App() {
                     </div>
                     <div className="text-right">
                       <p className="font-bold text-blue-600 poppins-bold">
-                        $12
+                        ₵12
                       </p>
                       <p className="text-xs text-blue-600 roboto-regular">
                         Due Today
@@ -312,7 +311,7 @@ function App() {
                 transition={{ duration: 2, repeat: Infinity }}
                 className="absolute -top-4 -right-4 bg-[#1E3A8A] text-white p-3 rounded-full shadow-lg"
               >
-                <DollarSign size={24} />
+                <span className="text-2xl font-bold text-[#1E3A8A]">₵</span>
               </motion.div>
             </motion.div>
           </div>
@@ -378,7 +377,9 @@ function App() {
             >
               {[
                 {
-                  icon: <DollarSign size={32} className="text-[#1E3A8A]" />,
+                  icon: (
+                    <span className="text-3xl font-bold text-[#1E3A8A]">₵</span>
+                  ),
                   title: "Track Multiple Debtors",
                   description:
                     "Keep all your debt records in one organized place",
@@ -442,7 +443,9 @@ function App() {
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
             {[
               {
-                icon: <DollarSign size={40} className="text-[#1E3A8A]" />,
+                icon: (
+                  <span className="text-4xl font-bold text-[#1E3A8A]">₵</span>
+                ),
                 title: "Track Debts",
                 description:
                   "Keep all debt records in one place with detailed information and status tracking.",
@@ -525,7 +528,7 @@ function App() {
                 <div className="flex items-center space-x-3">
                   <Mail size={20} className="text-[#1E3A8A]" />
                   <span className="text-gray-600 roboto-regular">
-                    tuabi@gmail.com
+                    officialtuabi@gmail.com
                   </span>
                 </div>
                 <div className="flex items-center space-x-3">
@@ -616,7 +619,7 @@ function App() {
                 Tuabi
               </h3>
               <p className="text-gray-400 roboto-regular">
-                Track debts easily. Get paid faster.
+                Track debts in cedis. Get paid faster.
               </p>
             </div>
 
@@ -648,19 +651,25 @@ function App() {
               </h4>
               <div className="flex space-x-4">
                 <a
-                  href="#"
+                  href="https://www.linkedin.com/in/bliss-armah-nwanwah/"
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="text-gray-400 hover:text-white transition-colors duration-200"
                 >
                   <Linkedin size={24} />
                 </a>
                 <a
-                  href="#"
+                  href="https://x.com/BlissAbrantie"
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="text-gray-400 hover:text-white transition-colors duration-200"
                 >
                   <Twitter size={24} />
                 </a>
                 <a
-                  href="#"
+                  href="mailto:officialtuabi@gmail.com"
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="text-gray-400 hover:text-white transition-colors duration-200"
                 >
                   <Mail size={24} />
