@@ -688,7 +688,7 @@ function App() {
 
       {/* WhatsApp Floating Button */}
       <motion.a
-        href="https://wa.me/0245289983"
+        href="https://wa.me/233245289983"
         target="_blank"
         rel="noopener noreferrer"
         initial={{ scale: 0 }}
