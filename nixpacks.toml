@@ -1,9 +1,12 @@
-# Work around npm's optional-dependencies bug (npm/cli#4828) that leaves
-# @tailwindcss/oxide without its Linux native binding under `npm ci`.
+# @tailwindcss/oxide ships its native code as per-platform optional packages.
+# npm (esp. older versions) has a bug (npm/cli#4828) that leaves the Linux
+# binary uninstalled, so `oxide/index.js` throws "Cannot find native binding".
 #
-# A fresh `npm install` on the build image resolves the correct platform binary
-# (@tailwindcss/oxide-linux-x64-gnu). We wipe any cached lockfile/node_modules
-# first so the resolution happens against THIS build's OS/arch — exactly what
-# the npm error message recommends.
+# Fix: run the normal install, then EXPLICITLY install the Linux x64 (glibc)
+# binary that oxide's require() looks for. Nixpacks uses a Debian/glibc base,
+# so `-linux-x64-gnu` is the correct one. --no-save keeps package.json clean.
 [phases.install]
-cmds = ["rm -rf node_modules package-lock.json", "npm install --include=optional"]
+cmds = [
+  "npm install",
+  "npm install --no-save @tailwindcss/oxide-linux-x64-gnu@4.3.3",
+]
