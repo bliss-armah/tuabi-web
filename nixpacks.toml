@@ -1,0 +1,9 @@
+# Work around npm's optional-dependencies bug (npm/cli#4828) that leaves
+# @tailwindcss/oxide without its Linux native binding under `npm ci`.
+#
+# A fresh `npm install` on the build image resolves the correct platform binary
+# (@tailwindcss/oxide-linux-x64-gnu). We wipe any cached lockfile/node_modules
+# first so the resolution happens against THIS build's OS/arch — exactly what
+# the npm error message recommends.
+[phases.install]
+cmds = ["rm -rf node_modules package-lock.json", "npm install --include=optional"]
