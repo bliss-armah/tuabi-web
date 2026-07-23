@@ -6,7 +6,7 @@ RUN npm ci && npm install --no-save @tailwindcss/oxide-linux-x64-gnu@4.3.3
 
 COPY . .
 
-ARG VITE_API_BASE_URL
+ARG VITE_API_BASE_URL=https://api.tuabi.muginasolutions.com
 ENV VITE_API_BASE_URL=$VITE_API_BASE_URL
 
 RUN npm run build
