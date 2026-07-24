@@ -188,7 +188,7 @@ export default function Layout({ children }: LayoutProps) {
           <div className="hidden lg:block" />
 
           <div className="flex items-center gap-1">
-            <NotificationBadge />
+            {role !== "SUPER_ADMIN" && <NotificationBadge />}
             <ModeToggle />
             <DropdownMenu>
               <DropdownMenuTrigger className="ml-1 rounded-full outline-none focus-visible:ring-2 focus-visible:ring-ring">
