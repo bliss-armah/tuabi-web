@@ -14,14 +14,9 @@ import { Button } from "@/shared/components/ui/button";
 import { Input } from "@/shared/components/ui/input";
 import { cn } from "@/shared/utils/utils";
 import DebtorsPageSkeleton from "@/shared/components/skeletons/DebtorsPageSkeleton";
-import { useAuth } from "@/shared/hooks/useAuth";
-import sseService from "@/shared/services/sseService";
-import { useEffect } from "react";
-
 type ViewMode = "table" | "cards";
 
 export default function Debtors() {
-  const { user } = useAuth();
   const { data, isLoading, error, refetch } = useGetDebtorsQuery();
   const [viewMode, setViewMode] = useState<ViewMode>("table");
   const [isDebtorModalOpen, setIsDebtorModalOpen] = useState(false);
@@ -35,15 +30,6 @@ export default function Debtors() {
   const debtors = data?.data || [];
   const { searchTerm, setSearchTerm, filteredDebtors } =
     useDebtorFilters(debtors);
-
-  useEffect(() => {
-    if (user?.id) {
-      sseService.connect(user.id);
-      return () => {
-        sseService.disconnect();
-      };
-    }
-  }, [user?.id]);
 
   if (isLoading || subscriptionLoading) {
     return (

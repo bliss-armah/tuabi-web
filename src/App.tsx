@@ -8,6 +8,10 @@ import { Provider } from "react-redux";
 import { useEffect } from "react";
 import { store } from "./shared/store";
 import { useAuth } from "./shared/hooks/useAuth";
+import { debtorApi } from "./debtors/debtorApi";
+import { remindersApi } from "./reminders/remindersApi";
+import { subscriptionApi } from "./subscription/subscriptionApi";
+import { historyApi } from "./history/historyApi";
 import Login from "./auth/Login";
 import AcceptInvite from "./auth/AcceptInvite";
 import OTPVerification from "./auth/OTPVerification";
@@ -123,19 +127,26 @@ const HomeRoute = () => {
 const NotificationEventHandler = () => {
   useEffect(() => {
     const handleRefreshReminders = () => {
-      window.dispatchEvent(new CustomEvent("reminders:refresh"));
+      store.dispatch(remindersApi.util.invalidateTags(["Reminder"]));
     };
 
     const handleRefreshSubscription = () => {
-      window.dispatchEvent(new CustomEvent("subscription:refresh"));
+      store.dispatch(
+        subscriptionApi.util.invalidateTags(["Subscription", "SubscriptionStatus"])
+      );
     };
 
     const handleRefreshPayments = () => {
-      window.dispatchEvent(new CustomEvent("debtors:refresh"));
+      store.dispatch(
+        debtorApi.util.invalidateTags(["Debtor", "Debtors", "Dashboard", "DebtHistory"])
+      );
+      store.dispatch(historyApi.util.invalidateTags(["History"]));
     };
 
     const handleRefreshDebtors = () => {
-      window.dispatchEvent(new CustomEvent("debtors:refresh"));
+      store.dispatch(
+        debtorApi.util.invalidateTags(["Debtor", "Debtors", "Dashboard", "DebtHistory"])
+      );
     };
 
     // Handle SSE notifications with toast notifications

@@ -95,26 +95,15 @@ export const useAuth = () => {
   }, [profileResponse?.data, user]);
 
   useEffect(() => {
-    const initializeServices = async () => {
-      if (user?.id) {
+    if (!user?.id) return;
 
-        await new Promise(resolve => setTimeout(resolve, 200));
+    const timer = setTimeout(() => {
+      sseService.connect(user.id!).catch((error) => {
+        console.error("❌ Error initializing services:", error);
+      });
+    }, 200);
 
-        try {
-          await sseService.connect(user.id);
-        } catch (error) {
-          console.error("❌ Error initializing services:", error);
-        }
-      } else {
-        sseService.disconnect();
-      }
-    };
-
-    initializeServices();
-
-    return () => {
-      sseService.disconnect();
-    };
+    return () => clearTimeout(timer);
   }, [user?.id]);
 
   const logout = async () => {
