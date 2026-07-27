@@ -1,4 +1,4 @@
-import { Phone, Eye, Pencil, Plus } from "lucide-react";
+import { Phone, Eye, Pencil, Plus, MoreVertical } from "lucide-react";
 import { Button } from "@/shared/components/ui/button";
 import { Card } from "@/shared/components/ui/card";
 import {
@@ -9,6 +9,12 @@ import {
   TableHead,
   TableCell,
 } from "@/shared/components/ui/table";
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+} from "@/shared/components/ui/dropdown-menu";
 import type { Debtor } from "@/shared/types/debtor";
 
 interface DebtorTableProps {
@@ -39,7 +45,11 @@ export default function DebtorTable({
           </TableHeader>
           <TableBody>
             {debtors.map((debtor) => (
-              <TableRow key={debtor.id}>
+              <TableRow
+                key={debtor.id}
+                onClick={() => onViewDetails(debtor)}
+                className="cursor-pointer"
+              >
                 <TableCell>
                   <span className="font-medium capitalize text-foreground">
                     {debtor.name}
@@ -66,27 +76,36 @@ export default function DebtorTable({
                   </p>
                 </TableCell>
                 <TableCell>
-                  <div className="flex items-center justify-center gap-1">
-                    <Button
-                      onClick={() => onViewDetails(debtor)}
-                      variant="ghost"
-                      size="icon-sm"
-                      title="View Details"
-                    >
-                      <Eye className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      onClick={() => onEdit(debtor)}
-                      variant="ghost"
-                      size="icon-sm"
-                      title="Edit Debtor"
-                    >
-                      <Pencil className="h-4 w-4" />
-                    </Button>
-                    <Button onClick={() => onAddPayment(debtor)} size="sm">
-                      <Plus className="h-4 w-4" />
-                      Payment
-                    </Button>
+                  <div className="flex items-center justify-center">
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="icon-sm"
+                          onClick={(e) => e.stopPropagation()}
+                          aria-label="Debtor actions"
+                        >
+                          <MoreVertical className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent
+                        align="end"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <DropdownMenuItem onSelect={() => onViewDetails(debtor)}>
+                          <Eye className="h-4 w-4" />
+                          View details
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onSelect={() => onEdit(debtor)}>
+                          <Pencil className="h-4 w-4" />
+                          Edit
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onSelect={() => onAddPayment(debtor)}>
+                          <Plus className="h-4 w-4" />
+                          Make payment
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   </div>
                 </TableCell>
               </TableRow>

@@ -1,4 +1,4 @@
-import { Phone, Calendar, Eye, Pencil, Plus } from "lucide-react";
+import { Phone, Calendar, Eye, Pencil, Plus, MoreVertical } from "lucide-react";
 import { Button } from "@/shared/components/ui/button";
 import { Card, CardContent } from "@/shared/components/ui/card";
 import {
@@ -6,6 +6,12 @@ import {
   AvatarImage,
   AvatarFallback,
 } from "@/shared/components/ui/avatar";
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+} from "@/shared/components/ui/dropdown-menu";
 import { cn } from "@/shared/utils/utils";
 import type { Debtor } from "@/shared/types/debtor";
 
@@ -25,7 +31,24 @@ export default function DebtorCard({
   className = "",
 }: DebtorCardProps) {
   return (
-    <Card className={cn("gap-0 py-0 transition-shadow hover:shadow-md", className)}>
+    <Card
+      role="button"
+      tabIndex={0}
+      onClick={() => onViewDetails(debtor)}
+      onKeyDown={(e) => {
+        if (
+          (e.key === "Enter" || e.key === " ") &&
+          e.target === e.currentTarget
+        ) {
+          e.preventDefault();
+          onViewDetails(debtor);
+        }
+      }}
+      className={cn(
+        "cursor-pointer gap-0 py-0 transition-shadow hover:shadow-md focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none",
+        className
+      )}
+    >
       <CardContent className="flex flex-col gap-4 p-6">
         <div className="flex items-start justify-between gap-4">
           <div className="flex min-w-0 flex-1 items-start gap-3">
@@ -49,13 +72,46 @@ export default function DebtorCard({
               )}
             </div>
           </div>
-          <div className="ml-4 text-right">
-            <p className="text-2xl font-bold text-destructive">
-              GH₵ {debtor.amountOwed?.toLocaleString() || 0}
-            </p>
-            <p className="whitespace-nowrap text-xs text-muted-foreground">
-              Amount Owed
-            </p>
+          <div className="flex items-start gap-2">
+            <div className="text-right">
+              <p className="text-2xl font-bold text-destructive">
+                GH₵ {debtor.amountOwed?.toLocaleString() || 0}
+              </p>
+              <p className="whitespace-nowrap text-xs text-muted-foreground">
+                Amount Owed
+              </p>
+            </div>
+            <div className="hidden md:block">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon-sm"
+                    onClick={(e) => e.stopPropagation()}
+                    aria-label="Debtor actions"
+                  >
+                    <MoreVertical className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent
+                  align="end"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <DropdownMenuItem onSelect={() => onViewDetails(debtor)}>
+                    <Eye className="h-4 w-4" />
+                    View details
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onSelect={() => onEdit(debtor)}>
+                    <Pencil className="h-4 w-4" />
+                    Edit
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onSelect={() => onAddPayment(debtor)}>
+                    <Plus className="h-4 w-4" />
+                    Make payment
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
           </div>
         </div>
 
@@ -70,25 +126,6 @@ export default function DebtorCard({
           <span className="truncate">
             Added {new Date(debtor.createdAt).toLocaleDateString()}
           </span>
-        </div>
-
-        <div className="flex justify-end gap-2 md:justify-start">
-          <Button
-            onClick={() => onViewDetails(debtor)}
-            variant="outline"
-            size="sm"
-          >
-            <Eye className="h-4 w-4" />
-            <span className="hidden md:inline">Details</span>
-          </Button>
-          <Button onClick={() => onEdit(debtor)} variant="outline" size="sm">
-            <Pencil className="h-4 w-4" />
-            <span className="hidden md:inline">Edit</span>
-          </Button>
-          <Button onClick={() => onAddPayment(debtor)} size="sm">
-            <Plus className="h-4 w-4" />
-            <span className="hidden md:inline">Payment</span>
-          </Button>
         </div>
       </CardContent>
     </Card>

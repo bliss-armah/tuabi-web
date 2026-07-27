@@ -31,24 +31,6 @@ interface HistoryItem {
   user?: { name?: string };
 }
 
-const C = {
-  page: "#0b0e14",
-  card: "#0f131b",
-  border: "#1c2330",
-  borderStrong: "#232b3a",
-  text: "#f2f4f8",
-  body: "#e6e9ef",
-  secondary: "#c3c9d6",
-  muted: "#8b94a6",
-  faint: "#6b7488",
-  eyebrow: "#616a7d",
-  primary: "#6366f1",
-  primaryLight: "#a5abff",
-  link: "#8b93ff",
-  danger: "#f87171",
-  success: "#34d399",
-};
-
 const initialsOf = (name: string): string => {
   const parts = name.trim().split(/\s+/).filter(Boolean);
   if (parts.length === 0) return "?";
@@ -81,6 +63,10 @@ const isToday = (value: string) => {
     d.getDate() === now.getDate()
   );
 };
+
+const eyebrow = "font-mono text-[11px] font-semibold uppercase tracking-[0.14em]";
+const bordered =
+  "rounded-[10px] border border-input text-foreground transition-colors duration-150 hover:bg-accent";
 
 export default function DebtorDetail() {
   const { id } = useParams<{ id: string }>();
@@ -159,9 +145,6 @@ export default function DebtorDetail() {
   const initials = debtorData ? initialsOf(debtorData.name) : "?";
   const daysUnchanged = lastActivityAt ? daysBetween(lastActivityAt) : 0;
 
-  const bordered =
-    "rounded-[10px] border border-[#232b3a] text-[#c3c9d6] transition-colors duration-150 hover:border-[#313a4b]";
-
   return (
     <DataFetchWrapper
       isLoading={isLoading || historyLoading}
@@ -170,10 +153,7 @@ export default function DebtorDetail() {
       loadingVariant="page"
     >
       {debtorData && (
-        <div
-          className="font-display rounded-[16px] border border-[#1c2330] bg-[#0b0e14] p-5 sm:px-9 sm:pt-8 sm:pb-9"
-          style={{ color: C.body }}
-        >
+        <div className="font-display rounded-[16px] border border-border bg-background p-5 text-foreground sm:px-9 sm:pt-8 sm:pb-9">
           <div className="flex flex-col gap-[26px]">
             {/* 1. Header row */}
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between sm:gap-5">
@@ -181,20 +161,17 @@ export default function DebtorDetail() {
                 <button
                   type="button"
                   onClick={() => navigate("/debtors")}
-                  className="grid h-9 w-9 shrink-0 place-items-center rounded-[10px] border border-[#232b3a] text-[#8b94a6] transition-colors duration-150 hover:border-[#313a4b]"
+                  className="grid h-9 w-9 shrink-0 place-items-center rounded-[10px] border border-input text-muted-foreground transition-colors duration-150 hover:bg-accent"
                   aria-label="Back to debtors"
                 >
                   <ArrowLeft className="h-4 w-4" />
                 </button>
 
                 <div className="flex min-w-0 flex-col gap-[5px]">
-                  <h1
-                    className="truncate text-[26px] font-extrabold leading-none"
-                    style={{ color: C.text, letterSpacing: "-0.02em" }}
-                  >
+                  <h1 className="truncate text-[26px] font-extrabold leading-none tracking-[-0.02em]">
                     {debtorData.name}
                   </h1>
-                  <div className="text-[13px] font-medium" style={{ color: C.faint }}>
+                  <div className="text-[13px] font-medium text-muted-foreground">
                     {debtorData.phoneNumber
                       ? `${formatPhoneNumber(debtorData.phoneNumber)} · `
                       : ""}
@@ -217,11 +194,7 @@ export default function DebtorDetail() {
                 <button
                   type="button"
                   onClick={() => setIsPaymentModalOpen(true)}
-                  className="flex-1 whitespace-nowrap rounded-[10px] px-[18px] py-[11px] text-center text-[14px] font-bold text-white transition-colors duration-150 sm:flex-none"
-                  style={{
-                    background: C.primary,
-                    boxShadow: "0 6px 20px -6px #6366f1aa",
-                  }}
+                  className="flex-1 whitespace-nowrap rounded-[10px] bg-primary px-[18px] py-[11px] text-center text-[14px] font-bold text-primary-foreground shadow-lg shadow-primary/30 transition-colors duration-150 hover:bg-primary/90 sm:flex-none"
                 >
                   + Record payment
                 </button>
@@ -231,85 +204,66 @@ export default function DebtorDetail() {
             {/* 2. Stat row */}
             <div className="grid grid-cols-1 gap-[14px] sm:grid-cols-[1.35fr_1fr_1fr]">
               <div
-                className="flex flex-col gap-3 rounded-[16px] px-[26px] py-6"
-                style={{
-                  background: "linear-gradient(140deg,#1a1319 0%,#10131b 70%)",
-                  border: `1px solid ${settled ? "#34d39929" : "#f8717129"}`,
-                }}
+                className={cn(
+                  "flex flex-col gap-3 rounded-[16px] border px-[26px] py-6",
+                  settled
+                    ? "border-success/20 bg-success/5"
+                    : "border-destructive/20 bg-destructive/5"
+                )}
               >
                 <div
-                  className="font-mono text-[11px] font-semibold uppercase"
-                  style={{
-                    letterSpacing: "0.14em",
-                    color: settled ? "#6ea98f" : "#a1707a",
-                  }}
+                  className={cn(
+                    eyebrow,
+                    settled ? "text-success/80" : "text-destructive/80"
+                  )}
                 >
                   {settled ? "SETTLED" : "BALANCE OWED"}
                 </div>
                 <div
-                  className="whitespace-nowrap text-[38px] font-extrabold leading-none sm:text-[46px]"
-                  style={{
-                    color: settled ? C.success : C.danger,
-                    letterSpacing: "-0.03em",
-                  }}
+                  className={cn(
+                    "whitespace-nowrap text-[38px] font-extrabold leading-none tracking-[-0.03em] sm:text-[46px]",
+                    settled ? "text-success" : "text-destructive"
+                  )}
                 >
                   GH₵ {settled ? "0" : balInt}
                   {!settled && (
-                    <span style={{ fontSize: "24px", color: "#f8717199" }}>
+                    <span className="text-[24px] text-destructive/60">
                       .{balDec}
                     </span>
                   )}
                 </div>
-                <div className="text-[13px] font-medium" style={{ color: C.muted }}>
+                <div className="text-[13px] font-medium text-muted-foreground">
                   {settled
                     ? "Fully paid"
                     : `Unchanged for ${daysUnchanged} ${daysUnchanged === 1 ? "day" : "days"}`}
                 </div>
               </div>
 
-              <div
-                className="flex flex-col gap-3 rounded-[16px] px-[26px] py-6"
-                style={{ background: C.card, border: `1px solid ${C.border}` }}
-              >
-                <div
-                  className="font-mono text-[11px] font-semibold uppercase"
-                  style={{ letterSpacing: "0.14em", color: C.eyebrow }}
-                >
+              <div className="flex flex-col gap-3 rounded-[16px] border border-border bg-card px-[26px] py-6">
+                <div className={cn(eyebrow, "text-muted-foreground")}>
                   TOTAL PAID
                 </div>
-                <div
-                  className="text-[34px] font-extrabold leading-none"
-                  style={{ color: C.body, letterSpacing: "-0.02em" }}
-                >
+                <div className="text-[34px] font-extrabold leading-none tracking-[-0.02em]">
                   GH₵ {totalPaid.toLocaleString()}
                 </div>
-                <div className="text-[13px] font-medium" style={{ color: C.faint }}>
+                <div className="text-[13px] font-medium text-muted-foreground">
                   across {payments.length}{" "}
                   {payments.length === 1 ? "payment" : "payments"}
                 </div>
               </div>
 
-              <div
-                className="flex flex-col gap-3 rounded-[16px] px-[26px] py-6"
-                style={{ background: C.card, border: `1px solid ${C.border}` }}
-              >
-                <div
-                  className="font-mono text-[11px] font-semibold uppercase"
-                  style={{ letterSpacing: "0.14em", color: C.eyebrow }}
-                >
+              <div className="flex flex-col gap-3 rounded-[16px] border border-border bg-card px-[26px] py-6">
+                <div className={cn(eyebrow, "text-muted-foreground")}>
                   LAST ACTIVITY
                 </div>
-                <div
-                  className="text-[34px] font-extrabold leading-none"
-                  style={{ color: C.body, letterSpacing: "-0.02em" }}
-                >
+                <div className="text-[34px] font-extrabold leading-none tracking-[-0.02em]">
                   {lastActivityAt && isToday(lastActivityAt)
                     ? "Today"
                     : lastActivityAt
                       ? formatDate(lastActivityAt)
                       : "—"}
                 </div>
-                <div className="text-[13px] font-medium" style={{ color: C.faint }}>
+                <div className="text-[13px] font-medium text-muted-foreground">
                   {lastActivityLabel}
                 </div>
               </div>
@@ -319,10 +273,7 @@ export default function DebtorDetail() {
             <div className="grid grid-cols-1 items-start gap-[22px] lg:grid-cols-[1fr_320px]">
               {/* Left — tabs + content */}
               <div className="flex flex-col gap-[18px]">
-                <div
-                  className="flex items-center gap-[26px]"
-                  style={{ borderBottom: `1px solid ${C.border}` }}
-                >
+                <div className="flex items-center gap-[26px] border-b border-border">
                   {(["transactions", "reminders"] as const).map((tab) => {
                     const active = activeTab === tab;
                     return (
@@ -330,14 +281,12 @@ export default function DebtorDetail() {
                         key={tab}
                         type="button"
                         onClick={() => setActiveTab(tab)}
-                        className="pb-3 text-[15px]"
-                        style={{
-                          fontWeight: active ? 700 : 600,
-                          color: active ? C.text : C.faint,
-                          boxShadow: active
-                            ? `inset 0 -2px 0 ${C.primary}`
-                            : "none",
-                        }}
+                        className={cn(
+                          "-mb-px border-b-2 pb-3 text-[15px]",
+                          active
+                            ? "border-primary font-bold text-foreground"
+                            : "border-transparent font-semibold text-muted-foreground"
+                        )}
                       >
                         {tab === "transactions"
                           ? "Transaction history"
@@ -348,7 +297,7 @@ export default function DebtorDetail() {
                 </div>
 
                 {activeTab === "transactions" && (
-                  <div className="flex flex-col">
+                  <div className="flex max-h-[480px] flex-col overflow-y-auto pr-1">
                     {timeline.map((entry, index) => {
                       const showConnector =
                         index < timeline.length - 1 || !hasPayments;
@@ -372,28 +321,16 @@ export default function DebtorDetail() {
                       return (
                         <div key={entry.id} className="flex gap-4">
                           <div className="flex flex-col items-center">
-                            <span
-                              className="mt-1.5 h-[11px] w-[11px] rounded-full"
-                              style={{ background: C.primary }}
-                            />
+                            <span className="mt-1.5 h-[11px] w-[11px] rounded-full bg-primary" />
                             {showConnector && (
-                              <span
-                                className="w-0.5 flex-1"
-                                style={{ background: C.border }}
-                              />
+                              <span className="w-0.5 flex-1 bg-border" />
                             )}
                           </div>
                           <div className="flex flex-col gap-1 pb-[26px]">
-                            <div
-                              className="text-[15px] font-bold leading-[1.3]"
-                              style={{ color: C.body }}
-                            >
+                            <div className="text-[15px] font-bold leading-[1.3]">
                               {title}
                             </div>
-                            <div
-                              className="text-[13px] font-medium leading-[1.5]"
-                              style={{ color: C.faint }}
-                            >
+                            <div className="text-[13px] font-medium leading-[1.5] text-muted-foreground">
                               {meta}
                             </div>
                             {entry.images && entry.images.length > 0 && (
@@ -403,7 +340,7 @@ export default function DebtorDetail() {
                                     key={img.id}
                                     type="button"
                                     onClick={() => setLightboxUrl(img.url)}
-                                    className="rounded-md border border-[#1c2330]"
+                                    className="rounded-md border border-border"
                                   >
                                     <img
                                       src={img.url}
@@ -422,30 +359,16 @@ export default function DebtorDetail() {
                     {!hasPayments && (
                       <div className="flex gap-4">
                         <div className="flex flex-col items-center">
-                          <span
-                            className="mt-1.5 h-[11px] w-[11px] rounded-full border"
-                            style={{
-                              borderColor: "#3a4356",
-                              background: "#161c27",
-                            }}
-                          />
+                          <span className="mt-1.5 h-[11px] w-[11px] rounded-full border border-input bg-muted" />
                         </div>
                         <div className="flex flex-col gap-[10px]">
-                          <div
-                            className="text-[15px] font-semibold leading-[1.3]"
-                            style={{ color: C.faint }}
-                          >
+                          <div className="text-[15px] font-semibold leading-[1.3] text-muted-foreground">
                             Awaiting first payment
                           </div>
                           <button
                             type="button"
                             onClick={() => setIsPaymentModalOpen(true)}
-                            className="self-start rounded-[9px] px-[18px] py-[10px] text-[13px] font-bold transition-colors duration-150"
-                            style={{
-                              background: "#6366f11f",
-                              border: "1px solid #6366f14d",
-                              color: C.primaryLight,
-                            }}
+                            className="self-start rounded-[9px] border border-primary/30 bg-primary/10 px-[18px] py-[10px] text-[13px] font-bold text-primary transition-colors duration-150 hover:bg-primary/15"
                           >
                             Record payment
                           </button>
@@ -466,18 +389,17 @@ export default function DebtorDetail() {
               {/* Right rail */}
               <div className="flex flex-col gap-[14px]">
                 {hasPhoto ? (
-                  <div
-                    className="rounded-[16px]"
-                    style={{ background: C.card, border: `1px solid ${C.border}` }}
-                  >
+                  <div className="rounded-[16px] border border-border bg-card">
                     <div className="flex items-center justify-between px-5 pt-[18px]">
                       <div
-                        className="font-mono text-[11px] font-semibold uppercase"
-                        style={{ letterSpacing: "0.12em", color: C.eyebrow }}
+                        className={cn(
+                          eyebrow,
+                          "tracking-[0.12em] text-muted-foreground"
+                        )}
                       >
                         Photos
                       </div>
-                      <div className="text-[12px]" style={{ color: C.faint }}>
+                      <div className="text-[12px] text-muted-foreground">
                         {photos.length}/5
                       </div>
                     </div>
@@ -487,8 +409,7 @@ export default function DebtorDetail() {
                           key={img.id}
                           type="button"
                           onClick={() => setLightboxUrl(img.url)}
-                          className="overflow-hidden rounded-md"
-                          style={{ border: `1px solid ${C.border}` }}
+                          className="overflow-hidden rounded-md border border-border"
                         >
                           <img
                             src={img.url}
@@ -503,33 +424,16 @@ export default function DebtorDetail() {
                   <button
                     type="button"
                     onClick={() => setIsDebtorModalOpen(true)}
-                    className="flex items-center gap-[14px] rounded-[16px] px-5 py-[18px] text-left"
-                    style={{
-                      background: C.card,
-                      border: "1px dashed #232b3a",
-                    }}
+                    className="flex items-center gap-[14px] rounded-[16px] border border-dashed border-input bg-card px-5 py-[18px] text-left"
                   >
-                    <div
-                      className="grid h-11 w-11 shrink-0 place-items-center rounded-[12px] text-[15px] font-bold"
-                      style={{
-                        background: "#6366f11a",
-                        border: "1px solid #6366f133",
-                        color: C.primaryLight,
-                      }}
-                    >
+                    <div className="grid h-11 w-11 shrink-0 place-items-center rounded-[12px] border border-primary/20 bg-primary/10 text-[15px] font-bold text-primary">
                       {initials}
                     </div>
                     <div className="flex flex-col gap-[3px]">
-                      <div
-                        className="text-[13px] font-bold"
-                        style={{ color: C.secondary }}
-                      >
+                      <div className="text-[13px] font-bold">
                         No photo on file
                       </div>
-                      <div
-                        className="text-[12px] font-semibold"
-                        style={{ color: C.link }}
-                      >
+                      <div className="text-[12px] font-semibold text-primary">
                         Add one
                       </div>
                     </div>
@@ -537,20 +441,16 @@ export default function DebtorDetail() {
                 )}
 
                 {debtorData.description && (
-                  <div
-                    className="flex flex-col gap-[7px] rounded-[16px] px-5 py-[18px]"
-                    style={{ background: C.card, border: `1px solid ${C.border}` }}
-                  >
+                  <div className="flex flex-col gap-[7px] rounded-[16px] border border-border bg-card px-5 py-[18px]">
                     <div
-                      className="font-mono text-[11px] font-semibold uppercase"
-                      style={{ letterSpacing: "0.12em", color: C.eyebrow }}
+                      className={cn(
+                        eyebrow,
+                        "tracking-[0.12em] text-muted-foreground"
+                      )}
                     >
                       DESCRIPTION
                     </div>
-                    <div
-                      className="text-[15px] font-semibold leading-[1.5]"
-                      style={{ color: C.body }}
-                    >
+                    <div className="text-[15px] font-semibold leading-[1.5]">
                       {debtorData.description}
                     </div>
                   </div>
@@ -569,12 +469,7 @@ export default function DebtorDetail() {
                       Call
                     </a>
                   ) : (
-                    <span
-                      className={cn(
-                        "flex flex-1 items-center justify-center gap-2 rounded-[10px] border border-[#232b3a] py-3 text-[13px] font-semibold opacity-40"
-                      )}
-                      style={{ color: C.secondary }}
-                    >
+                    <span className="flex flex-1 items-center justify-center gap-2 rounded-[10px] border border-input py-3 text-[13px] font-semibold text-foreground opacity-40">
                       <Phone className="h-4 w-4" />
                       Call
                     </span>

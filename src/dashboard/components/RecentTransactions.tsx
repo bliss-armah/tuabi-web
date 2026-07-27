@@ -78,7 +78,7 @@ export default function RecentTransactions({
   };
 
   const header = (
-    <CardHeader className="border-b">
+    <CardHeader className="border-b pt-6 [.border-b]:pb-3">
       <CardTitle className="text-base font-semibold">
         Recent Transactions
       </CardTitle>
@@ -120,7 +120,7 @@ export default function RecentTransactions({
       {hasTransactions ? (
         <div className="max-h-[calc(100vh-22rem)] overflow-auto">
           <Table>
-            <TableHeader>
+            <TableHeader className="sticky top-0 z-10 bg-card">
               <TableRow>
                 <TableHead className="whitespace-nowrap">Debtor Name</TableHead>
                 <TableHead className="whitespace-nowrap text-center">
