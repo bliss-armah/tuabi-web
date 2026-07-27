@@ -232,11 +232,13 @@ export default function DebtorDetail() {
                     </span>
                   )}
                 </div>
-                <div className="text-[13px] font-medium text-muted-foreground">
-                  {settled
-                    ? "Fully paid"
-                    : `Unchanged for ${daysUnchanged} ${daysUnchanged === 1 ? "day" : "days"}`}
-                </div>
+                {(settled || daysUnchanged >= 1) && (
+                  <div className="text-[13px] font-medium text-muted-foreground">
+                    {settled
+                      ? "Fully paid"
+                      : `Unchanged for ${daysUnchanged} ${daysUnchanged === 1 ? "day" : "days"}`}
+                  </div>
+                )}
               </div>
 
               <div className="flex flex-col gap-3 rounded-[16px] border border-border bg-card px-[26px] py-6">
@@ -246,10 +248,12 @@ export default function DebtorDetail() {
                 <div className="text-[34px] font-extrabold leading-none tracking-[-0.02em]">
                   GH₵ {totalPaid.toLocaleString()}
                 </div>
-                <div className="text-[13px] font-medium text-muted-foreground">
-                  across {payments.length}{" "}
-                  {payments.length === 1 ? "payment" : "payments"}
-                </div>
+                {payments.length > 0 && (
+                  <div className="text-[13px] font-medium text-muted-foreground">
+                    across {payments.length}{" "}
+                    {payments.length === 1 ? "payment" : "payments"}
+                  </div>
+                )}
               </div>
 
               <div className="flex flex-col gap-3 rounded-[16px] border border-border bg-card px-[26px] py-6">
