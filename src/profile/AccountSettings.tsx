@@ -115,9 +115,6 @@ export default function AccountSettings() {
           <h1 className="text-2xl font-bold tracking-tight">
             Account Settings
           </h1>
-          <p className="text-sm text-muted-foreground">
-            Manage your personal information
-          </p>
         </div>
       </div>
 

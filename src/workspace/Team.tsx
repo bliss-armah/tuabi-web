@@ -174,11 +174,6 @@ export default function Team() {
       <div className="flex items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Team</h1>
-          <p className="text-sm text-muted-foreground">
-            {workspaceName
-              ? `Store keepers in ${workspaceName}`
-              : "Store keepers in your workspace"}
-          </p>
         </div>
         <Button onClick={() => setIsInviteOpen(true)}>
           <UserPlus className="h-4 w-4" />

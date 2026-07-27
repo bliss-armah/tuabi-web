@@ -5,9 +5,13 @@ import {
   usePresignUploadsMutation,
 } from "@/debtors/debtorApi";
 import { Loader2, ImagePlus, X, Camera } from "lucide-react";
-import type { Debtor } from "@/shared/types/debtor";
+import type { Debtor, UploadedImage } from "@/shared/types/debtor";
 import { showSuccessToast } from "@/shared/utils/toastConfig";
-import { uploadImagesToR2, validateImageFile } from "@/shared/utils/uploadToR2";
+import {
+  uploadImagesToR2,
+  validateImageFile,
+  MAX_IMAGES,
+} from "@/shared/utils/uploadToR2";
 import CameraCapture from "@/shared/components/CameraCapture";
 import {
   Dialog,
@@ -44,8 +48,10 @@ export default function DebtorModal({
     description: "",
   });
 
-  const [imageFile, setImageFile] = useState<File | null>(null);
-  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [existingImages, setExistingImages] = useState<UploadedImage[]>([]);
+  const [removedImageIds, setRemovedImageIds] = useState<number[]>([]);
+  const [newFiles, setNewFiles] = useState<File[]>([]);
+  const [newPreviews, setNewPreviews] = useState<string[]>([]);
   const [isCameraOpen, setIsCameraOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -64,6 +70,7 @@ export default function DebtorModal({
           amountOwed: debtor.amountOwed.toString(),
           description: debtor.description || "",
         });
+        setExistingImages(debtor.images ?? []);
       } else {
         setFormData({
           name: "",
@@ -71,33 +78,56 @@ export default function DebtorModal({
           amountOwed: "",
           description: "",
         });
+        setExistingImages([]);
       }
-      setImageFile(null);
-      setImagePreview(debtor?.imageUrl ?? null);
+      setRemovedImageIds([]);
+      setNewFiles([]);
+      setNewPreviews([]);
       setError(null);
     }
   }, [isOpen, debtor]);
 
-  const applyImageFile = (file: File) => {
-    const validationError = validateImageFile(file);
-    if (validationError) {
-      setError(validationError);
+  const visibleExisting = existingImages.filter(
+    (img) => !removedImageIds.includes(img.id)
+  );
+  const totalImages = visibleExisting.length + newFiles.length;
+  const canAddMore = totalImages < MAX_IMAGES;
+
+  const addFiles = (files: File[]) => {
+    if (!files.length) return;
+    const room = MAX_IMAGES - totalImages;
+    if (room <= 0) {
+      setError(`You can attach at most ${MAX_IMAGES} photos`);
       return;
     }
+    const accepted: File[] = [];
+    for (const file of files.slice(0, room)) {
+      const validationError = validateImageFile(file);
+      if (validationError) {
+        setError(validationError);
+        return;
+      }
+      accepted.push(file);
+    }
     setError(null);
-    setImageFile(file);
-    setImagePreview(URL.createObjectURL(file));
+    const next = [...newFiles, ...accepted];
+    setNewFiles(next);
+    setNewPreviews(next.map((f) => URL.createObjectURL(f)));
   };
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    applyImageFile(file);
+  const handleFilesChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    addFiles(Array.from(e.target.files || []));
+    e.target.value = "";
   };
 
-  const clearImage = () => {
-    setImageFile(null);
-    setImagePreview(debtor?.imageUrl ?? null);
+  const removeNewImage = (index: number) => {
+    const next = newFiles.filter((_, i) => i !== index);
+    setNewFiles(next);
+    setNewPreviews(next.map((f) => URL.createObjectURL(f)));
+  };
+
+  const removeExistingImage = (id: number) => {
+    setRemovedImageIds((prev) => [...prev, id]);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -106,36 +136,34 @@ export default function DebtorModal({
     setIsLoading(true);
 
     try {
-      let imageKey: string | undefined;
-      if (imageFile) {
-        [imageKey] = await uploadImagesToR2([imageFile], presignUploads);
-      }
-
-      const debtorData = {
-        name: formData.name,
-        phoneNumber: formData.phoneNumber,
-        amountOwed: parseFloat(formData.amountOwed) || 0,
-        description: formData.description,
-        ...(imageKey ? { imageKey } : {}),
-      };
+      const newKeys = newFiles.length
+        ? await uploadImagesToR2(newFiles, presignUploads)
+        : [];
 
       if (isEditing && debtor) {
         await updateDebtor({
           id: debtor.id,
-          data: debtorData,
+          data: {
+            name: formData.name,
+            phoneNumber: formData.phoneNumber,
+            amountOwed: parseFloat(formData.amountOwed) || 0,
+            description: formData.description,
+            ...(newKeys.length ? { addImageKeys: newKeys } : {}),
+            ...(removedImageIds.length ? { removeImageIds: removedImageIds } : {}),
+          },
         }).unwrap();
         showSuccessToast("Debtor updated successfully");
       } else {
-        await createDebtor(debtorData).unwrap();
+        await createDebtor({
+          name: formData.name,
+          phoneNumber: formData.phoneNumber,
+          amountOwed: parseFloat(formData.amountOwed) || 0,
+          description: formData.description,
+          ...(newKeys.length ? { imageKeys: newKeys } : {}),
+        }).unwrap();
         showSuccessToast("Debtor added successfully");
       }
 
-      setFormData({
-        name: "",
-        phoneNumber: "",
-        amountOwed: "",
-        description: "",
-      });
       onClose();
     } catch (error: any) {
       console.error("Debtor operation error:", error);
@@ -228,48 +256,76 @@ export default function DebtorModal({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="debtor-image">Photo (optional)</Label>
-            {imagePreview ? (
-              <div className="relative w-24">
-                <img
-                  src={imagePreview}
-                  alt="Debtor"
-                  className="h-24 w-24 rounded-md border border-border object-cover"
-                />
-                <button
-                  type="button"
-                  onClick={clearImage}
-                  className="absolute -right-2 -top-2 flex h-6 w-6 items-center justify-center rounded-full bg-destructive text-white shadow"
-                  aria-label="Remove photo"
-                >
-                  <X className="h-3.5 w-3.5" />
-                </button>
-              </div>
-            ) : (
-              <div className="flex gap-2">
-                <label
-                  htmlFor="debtor-image"
-                  className="flex h-24 w-24 cursor-pointer flex-col items-center justify-center gap-1 rounded-md border border-dashed border-input text-muted-foreground transition-colors hover:bg-accent"
-                >
-                  <ImagePlus className="h-5 w-5" />
-                  <span className="text-xs">Upload</span>
-                </label>
-                <button
-                  type="button"
-                  onClick={() => setIsCameraOpen(true)}
-                  className="flex h-24 w-24 cursor-pointer flex-col items-center justify-center gap-1 rounded-md border border-dashed border-input text-muted-foreground transition-colors hover:bg-accent"
-                >
-                  <Camera className="h-5 w-5" />
-                  <span className="text-xs">Take photo</span>
-                </button>
-              </div>
-            )}
+            <div className="flex items-center justify-between">
+              <Label htmlFor="debtor-image">Photos (optional)</Label>
+              <span className="text-xs text-muted-foreground">
+                {totalImages}/{MAX_IMAGES}
+              </span>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {visibleExisting.map((img) => (
+                <div key={img.id} className="relative h-20 w-20">
+                  <img
+                    src={img.url}
+                    alt="Debtor"
+                    className="h-20 w-20 rounded-md border border-border object-cover"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => removeExistingImage(img.id)}
+                    className="absolute -right-2 -top-2 flex h-6 w-6 items-center justify-center rounded-full bg-destructive text-white shadow"
+                    aria-label="Remove photo"
+                  >
+                    <X className="h-3.5 w-3.5" />
+                  </button>
+                </div>
+              ))}
+
+              {newPreviews.map((preview, index) => (
+                <div key={preview} className="relative h-20 w-20">
+                  <img
+                    src={preview}
+                    alt="New"
+                    className="h-20 w-20 rounded-md border border-border object-cover"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => removeNewImage(index)}
+                    className="absolute -right-2 -top-2 flex h-6 w-6 items-center justify-center rounded-full bg-destructive text-white shadow"
+                    aria-label="Remove photo"
+                  >
+                    <X className="h-3.5 w-3.5" />
+                  </button>
+                </div>
+              ))}
+
+              {canAddMore && (
+                <>
+                  <label
+                    htmlFor="debtor-image"
+                    className="flex h-20 w-20 cursor-pointer flex-col items-center justify-center gap-1 rounded-md border border-dashed border-input text-muted-foreground transition-colors hover:bg-accent"
+                  >
+                    <ImagePlus className="h-5 w-5" />
+                    <span className="text-xs">Upload</span>
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => setIsCameraOpen(true)}
+                    className="flex h-20 w-20 cursor-pointer flex-col items-center justify-center gap-1 rounded-md border border-dashed border-input text-muted-foreground transition-colors hover:bg-accent"
+                  >
+                    <Camera className="h-5 w-5" />
+                    <span className="text-xs">Take photo</span>
+                  </button>
+                </>
+              )}
+            </div>
             <input
               id="debtor-image"
               type="file"
               accept="image/*"
+              multiple
               className="hidden"
-              onChange={handleImageChange}
+              onChange={handleFilesChange}
             />
           </div>
 
@@ -300,7 +356,7 @@ export default function DebtorModal({
       <CameraCapture
         isOpen={isCameraOpen}
         onClose={() => setIsCameraOpen(false)}
-        onCapture={applyImageFile}
+        onCapture={(file) => addFiles([file])}
       />
     </Dialog>
   );

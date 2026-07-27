@@ -23,6 +23,7 @@ export interface Debtor {
   description?: string;
   phoneNumber?: string;
   imageUrl?: string | null;
+  images?: UploadedImage[];
   createdAt: string;
   updatedAt: string;
 }
@@ -82,6 +83,7 @@ export interface CreateDebtorRequest {
   description?: string;
   phoneNumber?: string;
   imageKey?: string;
+  imageKeys?: string[];
 }
 
 export interface UpdateDebtorRequest {
@@ -90,6 +92,8 @@ export interface UpdateDebtorRequest {
   description?: string;
   phoneNumber?: string;
   imageKey?: string;
+  addImageKeys?: string[];
+  removeImageIds?: number[];
 }
 
 export interface DebtorAmountUpdateRequest {

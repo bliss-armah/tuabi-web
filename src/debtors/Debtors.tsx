@@ -85,9 +85,6 @@ export default function Debtors() {
       <div className="flex items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Debtors</h1>
-          <p className="text-sm text-muted-foreground">
-            Track and manage the people who owe you money.
-          </p>
         </div>
         <Button onClick={handleAddDebtor}>
           <Plus className="h-4 w-4" />

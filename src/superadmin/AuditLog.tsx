@@ -194,10 +194,6 @@ export default function AuditLog() {
       <div className="flex items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Audit Log</h1>
-          <p className="text-sm text-muted-foreground">
-            System events and admin activity. Auto-purged after {retentionDays}{" "}
-            days.
-          </p>
         </div>
         <div className="flex items-center gap-2">
           <Button

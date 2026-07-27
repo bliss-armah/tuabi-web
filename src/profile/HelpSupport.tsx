@@ -87,9 +87,6 @@ export default function HelpSupport() {
         </Button>
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Help & Support</h1>
-          <p className="text-sm text-muted-foreground">
-            Get help and find answers to your questions
-          </p>
         </div>
       </div>
 

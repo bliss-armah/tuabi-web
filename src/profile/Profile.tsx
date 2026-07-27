@@ -77,9 +77,6 @@ export default function Profile() {
       {/* Header */}
       <div>
         <h1 className="text-2xl font-bold tracking-tight">Profile</h1>
-        <p className="text-sm text-muted-foreground">
-          Manage your account and preferences
-        </p>
       </div>
 
       {/* User Information */}

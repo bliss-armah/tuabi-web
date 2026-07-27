@@ -149,17 +149,15 @@ export default function DebtorDetail() {
     return timeline.length === 1 ? "debt created" : "debt updated";
   })();
 
-  const hasPhoto = Boolean(debtorData?.imageUrl);
+  const photos =
+    debtorData?.images && debtorData.images.length > 0
+      ? debtorData.images
+      : debtorData?.imageUrl
+        ? [{ id: -1, url: debtorData.imageUrl }]
+        : [];
+  const hasPhoto = photos.length > 0;
   const initials = debtorData ? initialsOf(debtorData.name) : "?";
   const daysUnchanged = lastActivityAt ? daysBetween(lastActivityAt) : 0;
-
-  const openPhotoFlow = () => {
-    if (hasPhoto && debtorData?.imageUrl) {
-      setLightboxUrl(debtorData.imageUrl);
-    } else {
-      setIsDebtorModalOpen(true);
-    }
-  };
 
   const bordered =
     "rounded-[10px] border border-[#232b3a] text-[#c3c9d6] transition-colors duration-150 hover:border-[#313a4b]";
@@ -468,39 +466,39 @@ export default function DebtorDetail() {
               {/* Right rail */}
               <div className="flex flex-col gap-[14px]">
                 {hasPhoto ? (
-                  <button
-                    type="button"
-                    onClick={openPhotoFlow}
-                    className="overflow-hidden rounded-[16px] text-left"
+                  <div
+                    className="rounded-[16px]"
                     style={{ background: C.card, border: `1px solid ${C.border}` }}
                   >
-                    <img
-                      src={debtorData.imageUrl ?? ""}
-                      alt="Photo captured at signup"
-                      className="block h-[190px] w-full object-cover"
-                    />
-                    <div
-                      className="flex flex-col gap-1 px-4 py-[14px]"
-                      style={{ borderTop: `1px solid ${C.border}` }}
-                    >
+                    <div className="flex items-center justify-between px-5 pt-[18px]">
                       <div
-                        className="text-[13px] font-bold"
-                        style={{ color: C.secondary }}
+                        className="font-mono text-[11px] font-semibold uppercase"
+                        style={{ letterSpacing: "0.12em", color: C.eyebrow }}
                       >
-                        Captured at signup
+                        Photos
                       </div>
-                      <div
-                        className="font-mono text-[12px] font-medium"
-                        style={{ color: C.eyebrow }}
-                      >
-                        {formatDate(debtorData.createdAt)} ·{" "}
-                        {new Date(debtorData.createdAt).toLocaleTimeString([], {
-                          hour: "2-digit",
-                          minute: "2-digit",
-                        })}
+                      <div className="text-[12px]" style={{ color: C.faint }}>
+                        {photos.length}/5
                       </div>
                     </div>
-                  </button>
+                    <div className="grid grid-cols-3 gap-2 p-[18px] pt-3">
+                      {photos.map((img) => (
+                        <button
+                          key={img.id}
+                          type="button"
+                          onClick={() => setLightboxUrl(img.url)}
+                          className="overflow-hidden rounded-md"
+                          style={{ border: `1px solid ${C.border}` }}
+                        >
+                          <img
+                            src={img.url}
+                            alt="Purchase"
+                            className="aspect-square w-full object-cover"
+                          />
+                        </button>
+                      ))}
+                    </div>
+                  </div>
                 ) : (
                   <button
                     type="button"

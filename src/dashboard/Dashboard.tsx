@@ -42,9 +42,6 @@ export default function Dashboard() {
         <div className="flex items-center justify-between gap-4">
           <div>
             <h1 className="text-2xl font-bold tracking-tight">Dashboard</h1>
-            <p className="text-sm text-muted-foreground">
-              Overview of your debt portfolio
-            </p>
           </div>
           {addDebtorAction}
         </div>
@@ -74,9 +71,6 @@ export default function Dashboard() {
       <div className="flex items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Dashboard</h1>
-          <p className="text-sm text-muted-foreground">
-            Overview of your debt portfolio
-          </p>
         </div>
         {addDebtorAction}
       </div>

@@ -35,9 +35,6 @@ export default function PrivacySecurity() {
           <h1 className="text-2xl font-bold tracking-tight">
             Privacy & Security
           </h1>
-          <p className="text-sm text-muted-foreground">
-            How we protect and handle your data
-          </p>
         </div>
       </div>
 

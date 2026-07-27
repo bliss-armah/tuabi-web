@@ -352,9 +352,6 @@ export default function AdminDashboard() {
           <h1 className="text-2xl font-bold tracking-tight">
             Platform Console
           </h1>
-          <p className="text-sm text-muted-foreground">
-            Manage store owners and their workspaces
-          </p>
         </div>
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
           <DialogTrigger asChild>

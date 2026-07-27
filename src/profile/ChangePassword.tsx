@@ -181,9 +181,6 @@ export default function ChangePassword() {
         </div>
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Change Password</h1>
-          <p className="text-sm text-muted-foreground">
-            Update your password to keep your account secure
-          </p>
         </div>
       </div>
 

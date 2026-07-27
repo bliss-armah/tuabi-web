@@ -167,9 +167,6 @@ export default function Plans() {
         <h1 className="text-2xl font-bold tracking-tight">
           Subscription Plans
         </h1>
-        <p className="text-sm text-muted-foreground">
-          Choose the plan that fits your business and unlock every feature.
-        </p>
       </div>
 
       {/* Current Subscription Status */}
