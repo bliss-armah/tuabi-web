@@ -11,6 +11,7 @@ export interface HistoryEntry {
   performedById: number;
   debtor: { id: number; name: string; phoneNumber: string };
   user: { id: number; name: string; email: string };
+  images?: { id: number; url: string }[];
 }
 
 export interface HistoryListParams {

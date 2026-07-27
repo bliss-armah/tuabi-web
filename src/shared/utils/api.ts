@@ -4,6 +4,14 @@ import { getBaseUrl } from "@/config/api";
 // Get base URL from configuration
 const baseUrl = getBaseUrl();
 
+const emitServerStatus = (reachable: boolean) => {
+  if (typeof window !== "undefined") {
+    window.dispatchEvent(
+      new CustomEvent(reachable ? "server:reachable" : "server:unreachable")
+    );
+  }
+};
+
 
 export const baseQuery = fetchBaseQuery({
   baseUrl,
@@ -42,7 +50,12 @@ export const baseQueryWithErrorHandling = async (
   try {
     const result = await baseQuery(args, api, extraOptions);
 
-    if (result.error) {
+    if (!result.error) {
+      emitServerStatus(true);
+      return result;
+    }
+
+    {
       const errorDetails = {
         status: result.error.status,
         data: result.error.data,
@@ -54,6 +67,7 @@ export const baseQueryWithErrorHandling = async (
 
       // Handle CORS errors specifically
       if (result.error.status === 0 || result.error.status === "FETCH_ERROR") {
+        emitServerStatus(false);
         console.error(
           "CORS Error detected. Please check your backend CORS configuration."
         );
@@ -67,6 +81,8 @@ export const baseQueryWithErrorHandling = async (
           },
         };
       }
+
+      emitServerStatus(true);
 
       // Handle 401 errors (authentication expired)
       if (result.error.status === 401) {
@@ -91,6 +107,7 @@ export const baseQueryWithErrorHandling = async (
 
     return result;
   } catch (error) {
+    emitServerStatus(false);
     console.error("Network or CORS Error:", error);
     return {
       error: {

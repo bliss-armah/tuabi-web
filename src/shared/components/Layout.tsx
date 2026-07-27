@@ -20,7 +20,6 @@ import {
 import type { UserRole } from "@/shared/types/auth";
 import { cn } from "@/shared/utils/utils";
 import NotificationBadge from "@/notifications/NotificationBadge";
-import AIChatWidget from "./AIChatWidget";
 import { ModeToggle } from "./mode-toggle";
 import {
   Avatar,
@@ -241,8 +240,6 @@ export default function Layout({ children }: LayoutProps) {
         <main className="mx-auto w-full max-w-7xl p-4 pb-24 lg:p-8 lg:pb-8">
           {children}
         </main>
-
-        <AIChatWidget />
 
         {/* Mobile bottom navigation */}
         <nav className="safe-area-bottom fixed inset-x-0 bottom-0 z-40 border-t border-border bg-background/95 backdrop-blur lg:hidden">

@@ -36,6 +36,7 @@ import HistoryDetail from "./history/HistoryDetail";
 import type { UserRole } from "./shared/types/auth";
 
 import Layout from "./shared/components/Layout";
+import ServerStatusBanner from "./shared/components/ServerStatusBanner";
 import { ThemeProvider } from "./shared/components/theme-provider";
 import { TooltipProvider } from "./shared/components/ui/tooltip";
 import { Toaster } from "./shared/components/ui/sonner";
@@ -227,6 +228,7 @@ function App() {
     <ThemeProvider>
       <Provider store={store}>
         <TooltipProvider delayDuration={200}>
+          <ServerStatusBanner />
           <NotificationEventHandler />
           <Router>
             <div className="min-h-screen bg-background text-foreground">

@@ -1,3 +1,8 @@
+export interface UploadedImage {
+  id: number;
+  url: string;
+}
+
 export interface DebtHistory {
   id: number;
   debtorId: number;
@@ -8,6 +13,7 @@ export interface DebtHistory {
   newBalance: number;
   note?: string;
   createdAt: string;
+  images?: UploadedImage[];
 }
 
 export interface Debtor {
@@ -16,6 +22,7 @@ export interface Debtor {
   amountOwed: number;
   description?: string;
   phoneNumber?: string;
+  imageUrl?: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -74,6 +81,7 @@ export interface CreateDebtorRequest {
   amountOwed: number;
   description?: string;
   phoneNumber?: string;
+  imageKey?: string;
 }
 
 export interface UpdateDebtorRequest {
@@ -81,11 +89,22 @@ export interface UpdateDebtorRequest {
   amountOwed?: number;
   description?: string;
   phoneNumber?: string;
+  imageKey?: string;
 }
 
 export interface DebtorAmountUpdateRequest {
   amount: number;
   note?: string;
+  imageKeys?: string[];
+}
+
+export interface PresignRequest {
+  files: { filename: string; contentType: string }[];
+}
+
+export interface PresignResponse {
+  success: boolean;
+  data: { key: string; uploadUrl: string }[];
 }
 
 export interface DebtorQueryParams {

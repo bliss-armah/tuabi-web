@@ -2,10 +2,13 @@ import { useState, useEffect } from "react";
 import {
   useCreateDebtorMutation,
   useUpdateDebtorMutation,
+  usePresignUploadsMutation,
 } from "@/debtors/debtorApi";
-import { Loader2 } from "lucide-react";
+import { Loader2, ImagePlus, X, Camera } from "lucide-react";
 import type { Debtor } from "@/shared/types/debtor";
 import { showSuccessToast } from "@/shared/utils/toastConfig";
+import { uploadImagesToR2, validateImageFile } from "@/shared/utils/uploadToR2";
+import CameraCapture from "@/shared/components/CameraCapture";
 import {
   Dialog,
   DialogContent,
@@ -32,6 +35,7 @@ export default function DebtorModal({
 }: DebtorModalProps) {
   const [createDebtor] = useCreateDebtorMutation();
   const [updateDebtor] = useUpdateDebtorMutation();
+  const [presignUploads] = usePresignUploadsMutation();
 
   const [formData, setFormData] = useState({
     name: "",
@@ -40,6 +44,9 @@ export default function DebtorModal({
     description: "",
   });
 
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [isCameraOpen, setIsCameraOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -65,9 +72,33 @@ export default function DebtorModal({
           description: "",
         });
       }
+      setImageFile(null);
+      setImagePreview(debtor?.imageUrl ?? null);
       setError(null);
     }
   }, [isOpen, debtor]);
+
+  const applyImageFile = (file: File) => {
+    const validationError = validateImageFile(file);
+    if (validationError) {
+      setError(validationError);
+      return;
+    }
+    setError(null);
+    setImageFile(file);
+    setImagePreview(URL.createObjectURL(file));
+  };
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    applyImageFile(file);
+  };
+
+  const clearImage = () => {
+    setImageFile(null);
+    setImagePreview(debtor?.imageUrl ?? null);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -75,11 +106,17 @@ export default function DebtorModal({
     setIsLoading(true);
 
     try {
+      let imageKey: string | undefined;
+      if (imageFile) {
+        [imageKey] = await uploadImagesToR2([imageFile], presignUploads);
+      }
+
       const debtorData = {
         name: formData.name,
         phoneNumber: formData.phoneNumber,
         amountOwed: parseFloat(formData.amountOwed) || 0,
         description: formData.description,
+        ...(imageKey ? { imageKey } : {}),
       };
 
       if (isEditing && debtor) {
@@ -113,7 +150,15 @@ export default function DebtorModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent
+        className="sm:max-w-md"
+        onInteractOutside={(e) => {
+          if (isCameraOpen) e.preventDefault();
+        }}
+        onEscapeKeyDown={(e) => {
+          if (isCameraOpen) e.preventDefault();
+        }}
+      >
         <DialogHeader>
           <DialogTitle>{modalTitle}</DialogTitle>
         </DialogHeader>
@@ -182,6 +227,52 @@ export default function DebtorModal({
             />
           </div>
 
+          <div className="space-y-2">
+            <Label htmlFor="debtor-image">Photo (optional)</Label>
+            {imagePreview ? (
+              <div className="relative w-24">
+                <img
+                  src={imagePreview}
+                  alt="Debtor"
+                  className="h-24 w-24 rounded-md border border-border object-cover"
+                />
+                <button
+                  type="button"
+                  onClick={clearImage}
+                  className="absolute -right-2 -top-2 flex h-6 w-6 items-center justify-center rounded-full bg-destructive text-white shadow"
+                  aria-label="Remove photo"
+                >
+                  <X className="h-3.5 w-3.5" />
+                </button>
+              </div>
+            ) : (
+              <div className="flex gap-2">
+                <label
+                  htmlFor="debtor-image"
+                  className="flex h-24 w-24 cursor-pointer flex-col items-center justify-center gap-1 rounded-md border border-dashed border-input text-muted-foreground transition-colors hover:bg-accent"
+                >
+                  <ImagePlus className="h-5 w-5" />
+                  <span className="text-xs">Upload</span>
+                </label>
+                <button
+                  type="button"
+                  onClick={() => setIsCameraOpen(true)}
+                  className="flex h-24 w-24 cursor-pointer flex-col items-center justify-center gap-1 rounded-md border border-dashed border-input text-muted-foreground transition-colors hover:bg-accent"
+                >
+                  <Camera className="h-5 w-5" />
+                  <span className="text-xs">Take photo</span>
+                </button>
+              </div>
+            )}
+            <input
+              id="debtor-image"
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={handleImageChange}
+            />
+          </div>
+
           <DialogFooter>
             <Button
               type="button"
@@ -205,6 +296,12 @@ export default function DebtorModal({
           </DialogFooter>
         </form>
       </DialogContent>
+
+      <CameraCapture
+        isOpen={isCameraOpen}
+        onClose={() => setIsCameraOpen(false)}
+        onCapture={applyImageFile}
+      />
     </Dialog>
   );
 }

@@ -2,8 +2,14 @@ import { useState } from "react";
 import {
   useIncrementDebtorAmountMutation,
   useDecrementDebtorAmountMutation,
+  usePresignUploadsMutation,
 } from "@/debtors/debtorApi";
-import { TrendingUp, TrendingDown, Check, Loader2 } from "lucide-react";
+import { TrendingUp, TrendingDown, Check, Loader2, ImagePlus, X } from "lucide-react";
+import {
+  uploadImagesToR2,
+  validateImageFile,
+  MAX_IMAGES,
+} from "@/shared/utils/uploadToR2";
 import {
   Dialog,
   DialogContent,
@@ -42,13 +48,44 @@ export default function PaymentModal({
 }: PaymentModalProps) {
   const [incrementDebtorAmount] = useIncrementDebtorAmountMutation();
   const [decrementDebtorAmount] = useDecrementDebtorAmountMutation();
+  const [presignUploads] = usePresignUploadsMutation();
   const [formData, setFormData] = useState({
     action: "reduce" as "add" | "reduce" | "settled",
     amount: "",
     note: "",
   });
+  const [imageFiles, setImageFiles] = useState<File[]>([]);
+  const [previews, setPreviews] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const resetForm = () => {
+    setFormData({ action: "reduce", amount: "", note: "" });
+    setImageFiles([]);
+    setPreviews([]);
+  };
+
+  const handleImagesChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const selected = Array.from(e.target.files || []);
+    if (!selected.length) return;
+    const combined = [...imageFiles, ...selected].slice(0, MAX_IMAGES);
+    for (const file of selected) {
+      const validationError = validateImageFile(file);
+      if (validationError) {
+        setError(validationError);
+        return;
+      }
+    }
+    setError(null);
+    setImageFiles(combined);
+    setPreviews(combined.map((f) => URL.createObjectURL(f)));
+  };
+
+  const removeImage = (index: number) => {
+    const next = imageFiles.filter((_, i) => i !== index);
+    setImageFiles(next);
+    setPreviews(next.map((f) => URL.createObjectURL(f)));
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -66,25 +103,24 @@ export default function PaymentModal({
         formData.note ||
         (formData.action === "settled" ? "Debt settled in full" : "");
 
-      const mutationData = {
-        id: debtor.id,
-        data: { amount, note },
-      };
-
-      // Use the appropriate mutation based on action
       if (formData.action === "add") {
-        await incrementDebtorAmount(mutationData).unwrap();
+        const imageKeys =
+          imageFiles.length > 0
+            ? await uploadImagesToR2(imageFiles, presignUploads)
+            : undefined;
+        await incrementDebtorAmount({
+          id: debtor.id,
+          data: { amount, note, ...(imageKeys ? { imageKeys } : {}) },
+        }).unwrap();
       } else {
         // Both "reduce" and "settled" use decrement
-        await decrementDebtorAmount(mutationData).unwrap();
+        await decrementDebtorAmount({
+          id: debtor.id,
+          data: { amount, note },
+        }).unwrap();
       }
 
-      // Reset form and close modal
-      setFormData({
-        action: "reduce",
-        amount: "",
-        note: "",
-      });
+      resetForm();
       onClose();
     } catch (error: any) {
       console.error("Payment error:", error);
@@ -251,6 +287,48 @@ export default function PaymentModal({
               }
             />
           </div>
+
+          {formData.action === "add" && (
+            <div className="space-y-2">
+              <Label>Photos of what was bought (optional)</Label>
+              <div className="flex flex-wrap gap-2">
+                {previews.map((src, index) => (
+                  <div key={src} className="relative">
+                    <img
+                      src={src}
+                      alt={`Purchase ${index + 1}`}
+                      className="h-16 w-16 rounded-md border border-border object-cover"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => removeImage(index)}
+                      className="absolute -right-2 -top-2 flex h-5 w-5 items-center justify-center rounded-full bg-destructive text-white shadow"
+                      aria-label="Remove photo"
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  </div>
+                ))}
+                {imageFiles.length < MAX_IMAGES && (
+                  <label
+                    htmlFor="purchase-images"
+                    className="flex h-16 w-16 cursor-pointer flex-col items-center justify-center gap-1 rounded-md border border-dashed border-input text-muted-foreground transition-colors hover:bg-accent"
+                  >
+                    <ImagePlus className="h-4 w-4" />
+                    <span className="text-[10px]">Add</span>
+                  </label>
+                )}
+              </div>
+              <input
+                id="purchase-images"
+                type="file"
+                accept="image/*"
+                multiple
+                className="hidden"
+                onChange={handleImagesChange}
+              />
+            </div>
+          )}
 
           <DialogFooter>
             <Button
