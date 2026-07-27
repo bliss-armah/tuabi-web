@@ -1,6 +1,11 @@
 import { Phone, Calendar, Eye, Pencil, Plus } from "lucide-react";
 import { Button } from "@/shared/components/ui/button";
 import { Card, CardContent } from "@/shared/components/ui/card";
+import {
+  Avatar,
+  AvatarImage,
+  AvatarFallback,
+} from "@/shared/components/ui/avatar";
 import { cn } from "@/shared/utils/utils";
 import type { Debtor } from "@/shared/types/debtor";
 
@@ -23,18 +28,26 @@ export default function DebtorCard({
     <Card className={cn("gap-0 py-0 transition-shadow hover:shadow-md", className)}>
       <CardContent className="flex flex-col gap-4 p-6">
         <div className="flex items-start justify-between gap-4">
-          <div className="min-w-0 flex-1">
-            <h3 className="truncate text-lg font-semibold capitalize text-foreground">
-              {debtor.name}
-            </h3>
-            {debtor.phoneNumber && (
-              <div className="mt-1 flex items-center gap-2">
-                <Phone className="h-4 w-4 shrink-0 text-muted-foreground" />
-                <span className="truncate text-sm text-muted-foreground">
-                  {debtor.phoneNumber}
-                </span>
-              </div>
-            )}
+          <div className="flex min-w-0 flex-1 items-start gap-3">
+            <Avatar className="h-10 w-10 shrink-0">
+              {debtor.imageUrl && <AvatarImage src={debtor.imageUrl} alt={debtor.name} />}
+              <AvatarFallback className="uppercase">
+                {debtor.name?.charAt(0) || "?"}
+              </AvatarFallback>
+            </Avatar>
+            <div className="min-w-0 flex-1">
+              <h3 className="truncate text-lg font-semibold capitalize text-foreground">
+                {debtor.name}
+              </h3>
+              {debtor.phoneNumber && (
+                <div className="mt-1 flex items-center gap-2">
+                  <Phone className="h-4 w-4 shrink-0 text-muted-foreground" />
+                  <span className="truncate text-sm text-muted-foreground">
+                    {debtor.phoneNumber}
+                  </span>
+                </div>
+              )}
+            </div>
           </div>
           <div className="ml-4 text-right">
             <p className="text-2xl font-bold text-destructive">

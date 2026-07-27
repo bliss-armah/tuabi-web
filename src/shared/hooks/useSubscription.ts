@@ -10,10 +10,10 @@ export const useSubscription = () => {
 
   const subscription = subscriptionData?.data;
 
-  // Billing-exempt workspaces are never treated as expired.
   const hasExpired =
-    !subscription?.isExempt &&
-    (!subscription?.subscriptionExpiresAt ||
+    !!subscription &&
+    !subscription.isExempt &&
+    (!subscription.subscriptionExpiresAt ||
       new Date(subscription.subscriptionExpiresAt) < new Date());
 
   // Calculate days remaining

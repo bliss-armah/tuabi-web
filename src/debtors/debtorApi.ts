@@ -9,6 +9,8 @@ import type {
   UpdateDebtorRequest,
   DebtorAmountUpdateRequest,
   DebtorQueryParams,
+  PresignRequest,
+  PresignResponse,
 } from "@/shared/types/debtor";
 
 export const debtorApi = createApi({
@@ -102,6 +104,14 @@ export const debtorApi = createApi({
       ],
     }),
 
+    presignUploads: builder.mutation<PresignResponse, PresignRequest>({
+      query: (body) => ({
+        url: "/uploads/presign",
+        method: "POST",
+        body,
+      }),
+    }),
+
     getDashboardSummary: builder.query<DashboardResponse, void>({
       query: () => "/debtors/dashboard",
       providesTags: ["Dashboard"],
@@ -133,4 +143,5 @@ export const {
   useGetDebtorHistoryQuery,
   useGetDashboardSummaryQuery,
   useGetRecentTransactionsQuery,
+  usePresignUploadsMutation,
 } = debtorApi;

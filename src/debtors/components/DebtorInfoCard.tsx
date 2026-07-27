@@ -47,6 +47,16 @@ export default function DebtorInfoCard({ debtor }: DebtorInfoCardProps) {
   return (
     <Card>
       <CardContent className="space-y-6">
+        {debtor.imageUrl && (
+          <div className="flex justify-center sm:justify-start">
+            <img
+              src={debtor.imageUrl}
+              alt={debtor.name}
+              className="h-28 w-28 rounded-xl border border-border object-cover"
+            />
+          </div>
+        )}
+
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6 lg:grid-cols-4">
           {infoItems.map((item, index) => (
             <div key={index} className="flex items-center gap-3">

@@ -182,6 +182,31 @@ export default function HistoryDetail() {
               </DetailRow>
             </div>
 
+            {entry.images && entry.images.length > 0 && (
+              <div className="mt-4">
+                <p className="mb-2 text-sm font-medium text-muted-foreground">
+                  Photos
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  {entry.images.map((img) => (
+                    <a
+                      key={img.id}
+                      href={img.url}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="rounded-md border border-border"
+                    >
+                      <img
+                        src={img.url}
+                        alt="Purchase"
+                        className="h-20 w-20 rounded-md object-cover"
+                      />
+                    </a>
+                  ))}
+                </div>
+              </div>
+            )}
+
             <Separator className="my-4" />
 
             <Button variant="outline" asChild>
