@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useRequestPasswordResetMutation } from "./authApi";
-import { Phone, CheckCircle2, Loader2 } from "lucide-react";
+import { AtSign, CheckCircle2, Loader2 } from "lucide-react";
 import { Button } from "@/shared/components/ui/button";
 import { Input } from "@/shared/components/ui/input";
 import { Label } from "@/shared/components/ui/label";
@@ -18,17 +18,20 @@ export default function ForgotPassword() {
   const navigate = useNavigate();
   const [requestPasswordReset] = useRequestPasswordResetMutation();
 
-  const [phoneNumber, setPhoneNumber] = useState("");
+  const [identifier, setIdentifier] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+
+  const trimmed = identifier.trim();
+  const isEmail = trimmed.includes("@");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
 
-    if (!phoneNumber.trim()) {
-      setError("Please enter your phone number");
+    if (!trimmed) {
+      setError("Please enter your email address or phone number");
       return;
     }
 
@@ -36,7 +39,7 @@ export default function ForgotPassword() {
 
     try {
       const response = await requestPasswordReset({
-        phoneNumber: phoneNumber.trim(),
+        identifier: trimmed,
       }).unwrap();
 
       if (response.success) {
@@ -75,8 +78,10 @@ export default function ForgotPassword() {
               </div>
               <CardTitle className="text-2xl">Reset Code Sent!</CardTitle>
               <CardDescription>
-                We've sent a 6-digit reset code to your phone number. Please
-                check your SMS and enter the code to reset your password.
+                If an account exists for that {isEmail ? "email address" : "phone number"},
+                we've sent it a 6-digit reset code. Check your{" "}
+                {isEmail ? "inbox" : "SMS"} and enter the code to reset your
+                password.
               </CardDescription>
             </CardHeader>
 
@@ -85,7 +90,10 @@ export default function ForgotPassword() {
                 className="w-full"
                 onClick={() =>
                   navigate("/reset-password", {
-                    state: { phoneNumber: phoneNumber.trim() },
+                    state: {
+                      identifier: trimmed,
+                      channel: isEmail ? "EMAIL" : "SMS",
+                    },
                   })
                 }
               >
@@ -96,7 +104,7 @@ export default function ForgotPassword() {
                 className="w-full"
                 onClick={() => {
                   setSuccess(false);
-                  setPhoneNumber("");
+                  setIdentifier("");
                 }}
               >
                 Send Another Code
@@ -125,7 +133,8 @@ export default function ForgotPassword() {
           <CardHeader className="text-center">
             <CardTitle className="text-2xl">Forgot Password?</CardTitle>
             <CardDescription>
-              Enter your phone number and we'll send you a reset code
+              Enter your email address or phone number and we'll send you a
+              reset code
             </CardDescription>
           </CardHeader>
 
@@ -138,22 +147,24 @@ export default function ForgotPassword() {
 
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="phoneNumber">Phone Number</Label>
+                <Label htmlFor="identifier">Email or phone number</Label>
                 <div className="relative">
-                  <Phone className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                  <AtSign className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                   <Input
-                    id="phoneNumber"
-                    type="tel"
+                    id="identifier"
+                    type="text"
                     required
                     className="pl-9"
-                    placeholder="Enter your phone number"
-                    value={phoneNumber}
-                    onChange={(e) => setPhoneNumber(e.target.value)}
+                    placeholder="you@example.com or 0245289983"
+                    value={identifier}
+                    onChange={(e) => setIdentifier(e.target.value)}
                     disabled={isLoading}
                   />
                 </div>
                 <p className="text-xs text-muted-foreground">
-                  We'll send a 6-digit reset code to this number
+                  {isEmail
+                    ? "We'll email a 6-digit reset code to this address"
+                    : "We'll text a 6-digit reset code to this number"}
                 </p>
               </div>
 

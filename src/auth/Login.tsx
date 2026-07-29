@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { useRequestOTPMutation, useAdminLoginMutation } from "./authApi";
+import { useRequestOTPMutation } from "./authApi";
 import { Phone, Lock, Mail, Eye, EyeOff, Loader2 } from "lucide-react";
 import { Button } from "@/shared/components/ui/button";
 import { Input } from "@/shared/components/ui/input";
@@ -20,7 +20,6 @@ type Mode = "phone" | "email";
 export default function Login() {
   const navigate = useNavigate();
   const [requestOTP] = useRequestOTPMutation();
-  const [adminLogin] = useAdminLoginMutation();
 
   const [mode, setMode] = useState<Mode>("phone");
   const [phoneNumber, setPhoneNumber] = useState("");
@@ -33,34 +32,28 @@ export default function Login() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
+
+    const identifier = (mode === "phone" ? phoneNumber : email).trim();
+    if (!identifier || !password) {
+      setError("Please fill in all fields");
+      return;
+    }
+
     setIsLoading(true);
 
     try {
-      if (mode === "phone") {
-        if (!phoneNumber || !password) {
-          setError("Please fill in all fields");
-          return;
-        }
-        const response = await requestOTP({ phoneNumber, password }).unwrap();
-        if (response.success) {
-          navigate("/otp-verification", { state: { phoneNumber, password } });
-        } else {
-          setError(response.message || "Failed to send OTP");
-        }
+      const response = await requestOTP({ identifier, password }).unwrap();
+      if (response.success) {
+        navigate("/otp-verification", {
+          state: {
+            identifier,
+            channel: response.data?.channel ?? (mode === "phone" ? "SMS" : "EMAIL"),
+            maskedTarget: response.data?.maskedTarget,
+            expiryMinutes: response.data?.expiryMinutes,
+          },
+        });
       } else {
-        if (!email || !password) {
-          setError("Please fill in all fields");
-          return;
-        }
-        const response = await adminLogin({ email, password }).unwrap();
-        if (response.success) {
-          localStorage.setItem("user", JSON.stringify(response.data.user));
-          if (response.data.token)
-            localStorage.setItem("authToken", response.data.token);
-          navigate("/");
-        } else {
-          setError(response.message || "Invalid credentials");
-        }
+        setError(response.message || "Failed to send verification code");
       }
     } catch (err: any) {
       setError(err?.data?.message || "Sign in failed. Please try again.");
@@ -104,7 +97,7 @@ export default function Login() {
                     : "text-muted-foreground hover:text-foreground",
                 )}
               >
-                Store keeper
+                Phone number
               </button>
               <button
                 type="button"
@@ -119,7 +112,7 @@ export default function Login() {
                     : "text-muted-foreground hover:text-foreground",
                 )}
               >
-                Owner / Admin
+                Email
               </button>
             </div>
 
@@ -138,6 +131,8 @@ export default function Login() {
                     <Input
                       id="phoneNumber"
                       type="tel"
+                      inputMode="tel"
+                      autoComplete="tel"
                       className="pl-9"
                       placeholder="Enter your phone number"
                       value={phoneNumber}
@@ -201,15 +196,15 @@ export default function Login() {
                 </Link>
               </div>
 
+              <p className="text-xs text-muted-foreground">
+                {mode === "phone"
+                  ? "We'll text a 6-digit code to this number."
+                  : "We'll email a 6-digit code to this address."}
+              </p>
+
               <Button type="submit" className="w-full" disabled={isLoading}>
                 {isLoading && <Loader2 className="h-4 w-4 animate-spin" />}
-                {isLoading
-                  ? mode === "phone"
-                    ? "Sending OTP..."
-                    : "Signing in..."
-                  : mode === "phone"
-                    ? "Continue"
-                    : "Sign in"}
+                {isLoading ? "Sending code..." : "Continue"}
               </Button>
             </form>
           </CardContent>

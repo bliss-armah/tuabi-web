@@ -8,10 +8,14 @@ import {
   useRemoveMemberMutation,
   useResendMemberInviteMutation,
   useResetMemberPasswordMutation,
+  useUpdateMemberCredentialsMutation,
   type WorkspaceMember,
 } from "@/workspace/workspaceApi";
 import { useDeleteConfirmation } from "@/shared/components/ConfirmDialog";
 import ResetPasswordDialog from "@/shared/components/ResetPasswordDialog";
+import EditCredentialsDialog, {
+  type CredentialValues,
+} from "@/shared/components/EditCredentialsDialog";
 import { showErrorToast, showSuccessToast } from "@/shared/utils/toastConfig";
 import { cn } from "@/shared/utils/utils";
 
@@ -91,6 +95,8 @@ export default function Team() {
   const [removeMember] = useRemoveMemberMutation();
   const [resetMemberPassword, { isLoading: isResetting }] =
     useResetMemberPasswordMutation();
+  const [updateMemberCredentials, { isLoading: isSavingCredentials }] =
+    useUpdateMemberCredentialsMutation();
 
   const { showDeleteConfirmation, DeleteDialog } = useDeleteConfirmation();
 
@@ -98,6 +104,9 @@ export default function Team() {
     id: number;
     name: string;
   } | null>(null);
+  const [credentialTarget, setCredentialTarget] = useState<
+    ({ id: number } & CredentialValues) | null
+  >(null);
   const [isInviteOpen, setIsInviteOpen] = useState(false);
   const [name, setName] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
@@ -163,6 +172,26 @@ export default function Team() {
       const message =
         (err as { data?: { message?: string } })?.data?.message ||
         "Failed to reset password";
+      showErrorToast(message);
+      return false;
+    }
+  };
+
+  const handleUpdateCredentials = async (
+    changes: Partial<CredentialValues>
+  ): Promise<boolean> => {
+    if (!credentialTarget) return false;
+    try {
+      const response = await updateMemberCredentials({
+        userId: credentialTarget.id,
+        ...changes,
+      }).unwrap();
+      showSuccessToast(response.message || "Store keeper updated");
+      return true;
+    } catch (err) {
+      const message =
+        (err as { data?: { message?: string } })?.data?.message ||
+        "Failed to update sign-in details";
       showErrorToast(message);
       return false;
     }
@@ -276,6 +305,18 @@ export default function Team() {
                                 )}
                                 <DropdownMenuItem
                                   onClick={() =>
+                                    setCredentialTarget({
+                                      id: user.id,
+                                      name: user.name,
+                                      email: user.email ?? "",
+                                      phoneNumber: user.phoneNumber ?? "",
+                                    })
+                                  }
+                                >
+                                  Edit sign-in details
+                                </DropdownMenuItem>
+                                <DropdownMenuItem
+                                  onClick={() =>
                                     setResetTarget({
                                       id: user.id,
                                       name: user.name,
@@ -341,6 +382,7 @@ export default function Team() {
                 <Input
                   id="invite-phone"
                   type="tel"
+                  inputMode="tel"
                   value={phoneNumber}
                   onChange={(e) => setPhoneNumber(e.target.value)}
                   placeholder="0201234567"
@@ -392,6 +434,21 @@ export default function Team() {
         targetName={resetTarget?.name}
         isLoading={isResetting}
         onSubmit={handleResetPassword}
+      />
+
+      <EditCredentialsDialog
+        open={!!credentialTarget}
+        onOpenChange={(open) => {
+          if (!open) setCredentialTarget(null);
+        }}
+        targetLabel={credentialTarget?.name ?? "this store keeper"}
+        current={{
+          name: credentialTarget?.name ?? "",
+          email: credentialTarget?.email ?? "",
+          phoneNumber: credentialTarget?.phoneNumber ?? "",
+        }}
+        isLoading={isSavingCredentials}
+        onSubmit={handleUpdateCredentials}
       />
     </div>
   );

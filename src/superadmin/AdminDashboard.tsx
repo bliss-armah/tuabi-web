@@ -10,6 +10,7 @@ import {
   Send,
   Ban,
   CircleCheck,
+  IdCard,
   KeyRound,
   BadgeDollarSign,
   Gift,
@@ -58,10 +59,14 @@ import {
   useResendAdminInviteMutation,
   useSetAdminStatusMutation,
   useResetAdminPasswordMutation,
+  useUpdateAdminCredentialsMutation,
   useSetWorkspaceBillingMutation,
   type WorkspaceAdmin,
 } from "@/superadmin/adminApi";
 import ResetPasswordDialog from "@/shared/components/ResetPasswordDialog";
+import EditCredentialsDialog, {
+  type CredentialValues,
+} from "@/shared/components/EditCredentialsDialog";
 
 interface CreateAdminForm {
   name: string;
@@ -147,8 +152,11 @@ function WorkspaceRow({ workspace }: { workspace: WorkspaceAdmin }) {
     useResetAdminPasswordMutation();
   const [setBilling, { isLoading: isBilling }] =
     useSetWorkspaceBillingMutation();
+  const [updateCredentials, { isLoading: isSavingCredentials }] =
+    useUpdateAdminCredentialsMutation();
 
   const [resetOpen, setResetOpen] = useState(false);
+  const [credentialsOpen, setCredentialsOpen] = useState(false);
 
   const handleSetBilling = async (exempt: boolean) => {
     try {
@@ -161,6 +169,25 @@ function WorkspaceRow({ workspace }: { workspace: WorkspaceAdmin }) {
         (err as { data?: { message?: string } })?.data?.message ||
         "Failed to update billing";
       showErrorToast(message);
+    }
+  };
+
+  const handleUpdateCredentials = async (
+    changes: Partial<CredentialValues>
+  ): Promise<boolean> => {
+    try {
+      const response = await updateCredentials({
+        id: owner.id,
+        ...changes,
+      }).unwrap();
+      showSuccessToast(response.message || "Owner details updated");
+      return true;
+    } catch (err) {
+      const message =
+        (err as { data?: { message?: string } })?.data?.message ||
+        "Failed to update sign-in details";
+      showErrorToast(message);
+      return false;
     }
   };
 
@@ -266,6 +293,10 @@ function WorkspaceRow({ workspace }: { workspace: WorkspaceAdmin }) {
                 Resend invite
               </DropdownMenuItem>
             )}
+            <DropdownMenuItem onClick={() => setCredentialsOpen(true)}>
+              <IdCard className="h-4 w-4" />
+              Edit sign-in details
+            </DropdownMenuItem>
             <DropdownMenuItem onClick={() => setResetOpen(true)}>
               <KeyRound className="h-4 w-4" />
               Reset password
@@ -307,6 +338,19 @@ function WorkspaceRow({ workspace }: { workspace: WorkspaceAdmin }) {
       targetName={owner.name}
       isLoading={isResetting}
       onSubmit={handleResetPassword}
+    />
+
+    <EditCredentialsDialog
+      open={credentialsOpen}
+      onOpenChange={setCredentialsOpen}
+      targetLabel={`${owner.name} (workspace owner)`}
+      current={{
+        name: owner.name ?? "",
+        email: owner.email ?? "",
+        phoneNumber: owner.phoneNumber ?? "",
+      }}
+      isLoading={isSavingCredentials}
+      onSubmit={handleUpdateCredentials}
     />
     </>
   );
@@ -396,6 +440,7 @@ export default function AdminDashboard() {
                   <Input
                     id="phoneNumber"
                     type="tel"
+                    inputMode="tel"
                     value={form.phoneNumber}
                     onChange={handleChange("phoneNumber")}
                     placeholder="+233 20 000 0000"

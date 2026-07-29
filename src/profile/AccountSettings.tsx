@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/shared/hooks/useAuth";
+import { useUpdateProfileMutation } from "@/auth/authApi";
 import {
   User,
   Mail,
@@ -27,13 +28,17 @@ import {
 export default function AccountSettings() {
   const navigate = useNavigate();
   const { user, updateUser } = useAuth();
+  const [updateProfile] = useUpdateProfileMutation();
   const [isEditingName, setIsEditingName] = useState(false);
-  const [isEditingEmail, setIsEditingEmail] = useState(false);
   const [editedName, setEditedName] = useState(user?.name || "");
-  const [editedEmail, setEditedEmail] = useState(user?.email || "");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+
+  const signInDetailsOwner =
+    user?.role === "USER"
+      ? "Ask your workspace owner to update it."
+      : "Contact Tuabi support to update it.";
 
   const handleSaveName = async () => {
     if (!editedName.trim()) {
@@ -46,55 +51,26 @@ export default function AccountSettings() {
     setSuccess(null);
 
     try {
-      // Here you would typically call an API to update the user's name
-      // For now, we'll just update the local state
       if (!user) return;
-      const updatedUser = { ...user, name: editedName.trim() };
-      await updateUser(updatedUser);
+      const response = await updateProfile({
+        name: editedName.trim(),
+      }).unwrap();
 
+      await updateUser({ ...user, name: response.data.name });
       setSuccess("Name updated successfully!");
       setIsEditingName(false);
-    } catch (err) {
-      setError("Failed to update name. Please try again.");
+    } catch (err: any) {
+      setError(
+        err?.data?.message || "Failed to update name. Please try again.",
+      );
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleSaveEmail = async () => {
-    if (!editedEmail.trim() || !editedEmail.includes("@")) {
-      setError("Please enter a valid email address");
-      return;
-    }
-
-    setIsLoading(true);
-    setError(null);
-    setSuccess(null);
-
-    try {
-      // Here you would typically call an API to update the user's email
-      // For now, we'll just update the local state
-      if (!user) return;
-      const updatedUser = { ...user, email: editedEmail.trim() };
-      await updateUser(updatedUser);
-
-      setSuccess("Email updated successfully!");
-      setIsEditingEmail(false);
-    } catch (err) {
-      setError("Failed to update email. Please try again.");
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const cancelEdit = (type: "name" | "email") => {
-    if (type === "name") {
-      setEditedName(user?.name || "");
-      setIsEditingName(false);
-    } else {
-      setEditedEmail(user?.email || "");
-      setIsEditingEmail(false);
-    }
+  const cancelEdit = () => {
+    setEditedName(user?.name || "");
+    setIsEditingName(false);
     setError(null);
     setSuccess(null);
   };
@@ -182,7 +158,7 @@ export default function AccountSettings() {
                 <Button
                   size="icon"
                   variant="outline"
-                  onClick={() => cancelEdit("name")}
+                  onClick={cancelEdit}
                   disabled={isLoading}
                   className="text-destructive hover:text-destructive"
                   aria-label="Cancel"
@@ -202,63 +178,28 @@ export default function AccountSettings() {
             )}
           </div>
 
-          {/* Email */}
-          <div className="flex items-start justify-between gap-3">
-            <div className="flex flex-1 items-start gap-3">
-              <div className="rounded-lg bg-secondary p-2 text-secondary-foreground">
-                <Mail className="h-5 w-5" />
-              </div>
-              <div className="flex-1">
-                <p className="text-sm font-medium text-muted-foreground">
-                  Email Address
-                </p>
-                {isEditingEmail ? (
-                  <Input
-                    type="email"
-                    value={editedEmail}
-                    onChange={(e) => setEditedEmail(e.target.value)}
-                    className="mt-1"
-                    placeholder="Enter your email address"
-                    disabled={isLoading}
-                  />
-                ) : (
+          {/* Email (read-only — it is a sign-in identifier) */}
+          <div className="space-y-2">
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex items-center gap-3">
+                <div className="rounded-lg bg-secondary p-2 text-secondary-foreground">
+                  <Mail className="h-5 w-5" />
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">
+                    Email Address
+                  </p>
                   <p className="text-lg font-semibold">{user?.email}</p>
-                )}
+                </div>
+              </div>
+              <div className="rounded-lg bg-secondary p-2 text-secondary-foreground">
+                <ShieldCheck className="h-5 w-5" />
               </div>
             </div>
-            {isEditingEmail ? (
-              <div className="flex items-center gap-2">
-                <Button
-                  size="icon"
-                  variant="outline"
-                  onClick={handleSaveEmail}
-                  disabled={isLoading}
-                  className="text-success hover:text-success"
-                  aria-label="Save email"
-                >
-                  <Check className="h-4 w-4" />
-                </Button>
-                <Button
-                  size="icon"
-                  variant="outline"
-                  onClick={() => cancelEdit("email")}
-                  disabled={isLoading}
-                  className="text-destructive hover:text-destructive"
-                  aria-label="Cancel"
-                >
-                  <X className="h-4 w-4" />
-                </Button>
-              </div>
-            ) : (
-              <Button
-                size="icon"
-                variant="ghost"
-                onClick={() => setIsEditingEmail(true)}
-                aria-label="Edit email"
-              >
-                <Pencil className="h-4 w-4" />
-              </Button>
-            )}
+            <p className="text-xs text-muted-foreground">
+              You sign in with this email, so it cannot be changed here.{" "}
+              {signInDetailsOwner}
+            </p>
           </div>
 
           {/* Phone Number (Read-only) */}
@@ -280,8 +221,8 @@ export default function AccountSettings() {
               </div>
             </div>
             <p className="text-xs text-muted-foreground">
-              Phone number cannot be changed for security reasons. Contact
-              support if needed.
+              You can also sign in with this number, so it cannot be changed
+              here. {signInDetailsOwner}
             </p>
           </div>
         </CardContent>

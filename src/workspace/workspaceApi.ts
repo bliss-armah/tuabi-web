@@ -78,6 +78,22 @@ export const workspaceApi = createApi({
       }),
       invalidatesTags: ["Members", "Workspace"],
     }),
+    updateMemberCredentials: builder.mutation<
+      Envelope<unknown>,
+      {
+        userId: number;
+        name?: string;
+        email?: string;
+        phoneNumber?: string;
+      }
+    >({
+      query: ({ userId, ...body }) => ({
+        url: `/workspace/members/${userId}/credentials`,
+        method: "PATCH",
+        body,
+      }),
+      invalidatesTags: ["Members"],
+    }),
     resetMemberPassword: builder.mutation<
       Envelope<unknown>,
       { userId: number; newPassword: string }
@@ -100,4 +116,5 @@ export const {
   useResendMemberInviteMutation,
   useRemoveMemberMutation,
   useResetMemberPasswordMutation,
+  useUpdateMemberCredentialsMutation,
 } = workspaceApi;

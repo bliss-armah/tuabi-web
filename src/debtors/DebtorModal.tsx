@@ -217,6 +217,7 @@ export default function DebtorModal({
             <Input
               id="phoneNumber"
               type="tel"
+              inputMode="tel"
               placeholder="e.g 0241234567"
               value={formData.phoneNumber}
               onChange={(e) =>
@@ -232,6 +233,7 @@ export default function DebtorModal({
               type="number"
               step="0.01"
               min="0"
+              inputMode="decimal"
               required
               placeholder="0.00"
               value={formData.amountOwed}

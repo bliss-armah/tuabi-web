@@ -3,7 +3,6 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { useVerifyOTPMutation, useResendOTPMutation } from "./authApi";
 import { ArrowLeft, CheckCircle2, ShieldAlert, Loader2 } from "lucide-react";
 import { Button } from "@/shared/components/ui/button";
-import { Input } from "@/shared/components/ui/input";
 import { Label } from "@/shared/components/ui/label";
 import {
   Card,
@@ -18,6 +17,7 @@ import {
   AlertTitle,
 } from "@/shared/components/ui/alert";
 import { cn } from "@/shared/utils/utils";
+import { OtpInput } from "@/shared/components/OtpInput";
 
 export default function OTPVerification() {
   const navigate = useNavigate();
@@ -25,75 +25,29 @@ export default function OTPVerification() {
   const [verifyOTP] = useVerifyOTPMutation();
   const [resendOTP] = useResendOTPMutation();
 
-  const [otpCode, setOtpCode] = useState(["", "", "", "", "", ""]);
+  const [otpCode, setOtpCode] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isResending, setIsResending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   const [resendSuccess, setResendSuccess] = useState<string | null>(null);
 
-  const { phoneNumber } = location.state || {};
+  const { identifier, channel, maskedTarget, expiryMinutes } =
+    location.state || {};
+  const isEmail = channel === "EMAIL";
+  const destination = isEmail ? "email" : "phone";
 
   useEffect(() => {
-    if (!phoneNumber) {
+    if (!identifier) {
       navigate("/login");
     }
-  }, [phoneNumber, navigate]);
-
-  const handleOtpChange = (index: number, value: string) => {
-    if (value && !/^\d$/.test(value)) {
-      return;
-    }
-
-    const newOtpCode = [...otpCode];
-    newOtpCode[index] = value;
-    setOtpCode(newOtpCode);
-
-    if (value && index < 5) {
-      const nextInput = document.getElementById(`otp-${index + 1}`);
-      if (nextInput) {
-        nextInput.focus();
-      }
-    }
-  };
-
-  const handlePaste = (e: React.ClipboardEvent) => {
-    e.preventDefault();
-
-    const pastedValue = e.clipboardData.getData("text");
-    const numericValue = pastedValue.replace(/\D/g, "").slice(0, 6);
-
-    if (numericValue.length === 0) return;
-
-    const newOtpCode = ["", "", "", "", "", ""];
-
-    for (let i = 0; i < numericValue.length && i < 6; i++) {
-      newOtpCode[i] = numericValue[i];
-    }
-
-    setOtpCode(newOtpCode);
-
-    const nextFocusIndex = Math.min(numericValue.length, 5);
-    const nextInput = document.getElementById(`otp-${nextFocusIndex}`);
-    if (nextInput) {
-      nextInput.focus();
-    }
-  };
-
-  const handleKeyDown = (index: number, e: React.KeyboardEvent) => {
-    if (e.key === "Backspace" && !otpCode[index] && index > 0) {
-      const prevInput = document.getElementById(`otp-${index - 1}`);
-      if (prevInput) {
-        prevInput.focus();
-      }
-    }
-  };
+  }, [identifier, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
 
-    const otp = otpCode.join("");
+    const otp = otpCode;
     if (otp.length !== 6) {
       setError("Please enter the complete 6-digit code");
       return;
@@ -103,7 +57,7 @@ export default function OTPVerification() {
 
     try {
       const response = await verifyOTP({
-        phoneNumber,
+        identifier,
         otpCode: otp,
       }).unwrap();
 
@@ -135,11 +89,11 @@ export default function OTPVerification() {
 
     try {
       const response = await resendOTP({
-        phoneNumber,
+        identifier,
       }).unwrap();
 
       if (response.success) {
-        setResendSuccess("OTP resent successfully! Please check your phone.");
+        setResendSuccess(`Code resent. Please check your ${destination}.`);
         setTimeout(() => {
           setResendSuccess(null);
         }, 5000);
@@ -179,7 +133,7 @@ export default function OTPVerification() {
     );
   }
 
-  if (!phoneNumber) {
+  if (!identifier) {
     return null; // Will redirect to login
   }
 
@@ -198,9 +152,10 @@ export default function OTPVerification() {
 
         <Card>
           <CardHeader className="text-center">
-            <CardTitle className="text-2xl">Verify OTP</CardTitle>
+            <CardTitle className="text-2xl">Verify your code</CardTitle>
             <CardDescription>
-              Enter the 6-digit code sent to your phone
+              Enter the 6-digit code we sent to your {destination}
+              {maskedTarget ? ` (${maskedTarget})` : ""}
             </CardDescription>
           </CardHeader>
 
@@ -226,31 +181,20 @@ export default function OTPVerification() {
                 <Label className="mb-4 block text-center">
                   Enter Verification Code
                 </Label>
-                <div className="flex justify-center gap-2 sm:gap-3">
-                  {otpCode.map((digit, index) => (
-                    <Input
-                      key={index}
-                      id={`otp-${index}`}
-                      type="tel"
-                      inputMode="numeric"
-                      pattern="\d*"
-                      maxLength={1}
-                      className="h-11 w-10 text-center text-lg font-semibold md:h-12 md:w-12"
-                      value={digit}
-                      onChange={(e) => handleOtpChange(index, e.target.value)}
-                      onKeyDown={(e) => handleKeyDown(index, e)}
-                      onPaste={(e) => handlePaste(e)}
-                      disabled={isLoading}
-                    />
-                  ))}
-                </div>
+                <OtpInput
+                  value={otpCode}
+                  onChange={setOtpCode}
+                  disabled={isLoading}
+                  autoFocus
+                  idPrefix="otp"
+                />
               </div>
 
               {/* Submit Button */}
               <Button
                 type="submit"
                 className="w-full"
-                disabled={isLoading || otpCode.join("").length !== 6}
+                disabled={isLoading || otpCode.length !== 6}
               >
                 {isLoading && <Loader2 className="h-4 w-4 animate-spin" />}
                 {isLoading ? "Verifying..." : "Verify OTP"}
@@ -296,7 +240,8 @@ export default function OTPVerification() {
           <ShieldAlert className="h-4 w-4" />
           <AlertTitle className="text-warning">Security Notice</AlertTitle>
           <AlertDescription className="text-warning/90">
-            The verification code expires in 10 minutes. Keep your phone nearby.
+            The verification code expires in {expiryMinutes ?? 5} minutes. Keep
+            your {destination} nearby.
           </AlertDescription>
         </Alert>
       </div>

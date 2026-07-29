@@ -1,8 +1,21 @@
 import { createApi } from "@reduxjs/toolkit/query/react";
 import { baseQueryWithErrorHandling } from "@/shared/utils/api";
 
+export type OTPChannel = "SMS" | "EMAIL";
+
+export interface OTPChallengeResponse {
+  success: boolean;
+  message: string;
+  data?: {
+    channel: OTPChannel;
+    maskedTarget: string;
+    expiresAt: string;
+    expiryMinutes: number;
+  };
+}
+
 export interface LoginRequest {
-  phoneNumber: string;
+  identifier: string;
   password: string;
 }
 
@@ -21,11 +34,6 @@ export interface LoginResponse {
   };
 }
 
-export interface AdminLoginRequest {
-  email: string;
-  password: string;
-}
-
 export interface AcceptInviteRequest {
   phoneNumber: string;
   code: string;
@@ -33,12 +41,12 @@ export interface AcceptInviteRequest {
 }
 
 export interface VerifyOTPRequest {
-  phoneNumber: string;
+  identifier: string;
   otpCode: string;
 }
 
 export interface ResendOTPRequest {
-  phoneNumber: string;
+  identifier: string;
 }
 
 export interface ChangePasswordRequest {
@@ -47,9 +55,10 @@ export interface ChangePasswordRequest {
   confirmPassword: string;
 }
 
+// Name only: email and phone are sign-in identifiers and are changed by an
+// administrator (super admin for owners, workspace owner for store keepers).
 export interface UpdateProfileRequest {
-  name?: string;
-  email?: string;
+  name: string;
 }
 
 export interface UserProfile {
@@ -71,16 +80,16 @@ export interface UserProfile {
 }
 
 export interface RequestPasswordResetRequest {
-  phoneNumber: string;
+  identifier: string;
 }
 
 export interface VerifyResetCodeRequest {
-  phoneNumber: string;
+  identifier: string;
   resetCode: string;
 }
 
 export interface ResetPasswordRequest {
-  phoneNumber: string;
+  identifier: string;
   resetCode: string;
   newPassword: string;
 }
@@ -90,10 +99,7 @@ export const authApi = createApi({
   baseQuery: baseQueryWithErrorHandling,
   tagTypes: ["Auth"],
   endpoints: (builder) => ({
-    requestOTP: builder.mutation<
-      { success: boolean; message: string; data: { expiresIn: number } },
-      LoginRequest
-    >({
+    requestOTP: builder.mutation<OTPChallengeResponse, LoginRequest>({
       query: (credentials) => ({
         url: "/auth/request-otp",
         method: "POST",
@@ -110,25 +116,12 @@ export const authApi = createApi({
       invalidatesTags: ["Auth"],
     }),
 
-    resendOTP: builder.mutation<
-      { success: boolean; message: string; data: { expiresIn: number } },
-      ResendOTPRequest
-    >({
+    resendOTP: builder.mutation<OTPChallengeResponse, ResendOTPRequest>({
       query: (data) => ({
         url: "/auth/resend-otp",
         method: "POST",
         body: data,
       }),
-    }),
-
-    // Email + password login for workspace owners / super admins (no OTP)
-    adminLogin: builder.mutation<LoginResponse, AdminLoginRequest>({
-      query: (credentials) => ({
-        url: "/auth/admin-login",
-        method: "POST",
-        body: credentials,
-      }),
-      invalidatesTags: ["Auth"],
     }),
 
     // Invited users activate their account (set password) and are logged in
@@ -143,7 +136,7 @@ export const authApi = createApi({
 
     // Password reset flow
     requestPasswordReset: builder.mutation<
-      { success: boolean; message: string; data?: { expiresIn: string } },
+      OTPChallengeResponse,
       RequestPasswordResetRequest
     >({
       query: (data) => ({
@@ -227,7 +220,6 @@ export const {
   useRequestOTPMutation,
   useVerifyOTPMutation,
   useResendOTPMutation,
-  useAdminLoginMutation,
   useAcceptInviteMutation,
   useRequestPasswordResetMutation,
   useVerifyResetCodeMutation,

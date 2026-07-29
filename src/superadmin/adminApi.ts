@@ -85,6 +85,22 @@ export const adminApi = createApi({
       }),
       invalidatesTags: ["Admins"],
     }),
+    updateAdminCredentials: builder.mutation<
+      Envelope<unknown>,
+      {
+        id: number;
+        name?: string;
+        email?: string;
+        phoneNumber?: string;
+      }
+    >({
+      query: ({ id, ...body }) => ({
+        url: `/admin/admins/${id}/credentials`,
+        method: "PATCH",
+        body,
+      }),
+      invalidatesTags: ["Admins"],
+    }),
     setWorkspaceBilling: builder.mutation<
       Envelope<unknown>,
       { workspaceId: number; exempt: boolean }
@@ -106,5 +122,6 @@ export const {
   useResendAdminInviteMutation,
   useSetAdminStatusMutation,
   useResetAdminPasswordMutation,
+  useUpdateAdminCredentialsMutation,
   useSetWorkspaceBillingMutation,
 } = adminApi;

@@ -243,6 +243,7 @@ export default function PaymentModal({
                 type="number"
                 step="0.01"
                 min="0"
+                inputMode="decimal"
                 required
                 placeholder="0.00"
                 value={formData.amount}

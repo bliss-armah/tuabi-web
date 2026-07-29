@@ -14,6 +14,7 @@ import {
 } from "@/shared/components/ui/card";
 import { Alert, AlertDescription } from "@/shared/components/ui/alert";
 import { cn } from "@/shared/utils/utils";
+import { OtpInput } from "@/shared/components/OtpInput";
 
 export default function ResetPassword() {
   const navigate = useNavigate();
@@ -25,7 +26,7 @@ export default function ResetPassword() {
     confirmPassword: "",
   });
 
-  const [otpCode, setOtpCode] = useState(["", "", "", "", "", ""]);
+  const [otpCode, setOtpCode] = useState("");
 
   const [showPasswords, setShowPasswords] = useState({
     newPassword: false,
@@ -36,70 +37,21 @@ export default function ResetPassword() {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
 
-  // Get phone number from navigation state or URL params
-  const phoneNumber = location.state?.phoneNumber || "";
+  const identifier = location.state?.identifier || "";
+  const isEmail = (location.state?.channel || "") === "EMAIL";
+  const destination = isEmail ? "email" : "phone";
 
   useEffect(() => {
-    if (!phoneNumber) {
-      // If no phone number, redirect to forgot password
+    if (!identifier) {
       navigate("/forgot-password");
     }
-  }, [phoneNumber, navigate]);
-
-  const handleOtpChange = (index: number, value: string) => {
-    if (value && !/^\d$/.test(value)) {
-      return;
-    }
-
-    const newOtpCode = [...otpCode];
-    newOtpCode[index] = value;
-    setOtpCode(newOtpCode);
-
-    if (value && index < 5) {
-      const nextInput = document.getElementById(`reset-otp-${index + 1}`);
-      if (nextInput) {
-        nextInput.focus();
-      }
-    }
-  };
-
-  const handlePaste = (e: React.ClipboardEvent) => {
-    e.preventDefault();
-
-    const pastedValue = e.clipboardData.getData('text');
-    const numericValue = pastedValue.replace(/\D/g, '').slice(0, 6);
-
-    if (numericValue.length === 0) return;
-
-    const newOtpCode = ["", "", "", "", "", ""];
-
-    for (let i = 0; i < numericValue.length && i < 6; i++) {
-      newOtpCode[i] = numericValue[i];
-    }
-
-    setOtpCode(newOtpCode);
-
-    const nextFocusIndex = Math.min(numericValue.length, 5);
-    const nextInput = document.getElementById(`reset-otp-${nextFocusIndex}`);
-    if (nextInput) {
-      nextInput.focus();
-    }
-  };
-
-  const handleKeyDown = (index: number, e: React.KeyboardEvent) => {
-    if (e.key === "Backspace" && !otpCode[index] && index > 0) {
-      const prevInput = document.getElementById(`reset-otp-${index - 1}`);
-      if (prevInput) {
-        prevInput.focus();
-      }
-    }
-  };
+  }, [identifier, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
 
-    const resetCode = otpCode.join("");
+    const resetCode = otpCode;
 
     if (
       !resetCode ||
@@ -129,7 +81,7 @@ export default function ResetPassword() {
 
     try {
       const response = await resetPassword({
-        phoneNumber,
+        identifier,
         resetCode: resetCode,
         newPassword: formData.newPassword,
       }).unwrap();
@@ -195,7 +147,7 @@ export default function ResetPassword() {
     );
   }
 
-  if (!phoneNumber) {
+  if (!identifier) {
     return null; // Will redirect to forgot password
   }
 
@@ -233,26 +185,15 @@ export default function ResetPassword() {
                 <Label className="mb-4 block text-center">
                   Enter Reset Code
                 </Label>
-                <div className="flex justify-center gap-2 sm:gap-3">
-                  {otpCode.map((digit, index) => (
-                    <Input
-                      key={index}
-                      id={`reset-otp-${index}`}
-                      type="tel"
-                      inputMode="numeric"
-                      pattern="\d*"
-                      maxLength={1}
-                      className="h-11 w-10 text-center text-lg font-semibold md:h-12 md:w-12"
-                      value={digit}
-                      onChange={(e) => handleOtpChange(index, e.target.value)}
-                      onKeyDown={(e) => handleKeyDown(index, e)}
-                      onPaste={(e) => handlePaste(e)}
-                      disabled={isLoading}
-                    />
-                  ))}
-                </div>
+                <OtpInput
+                  value={otpCode}
+                  onChange={setOtpCode}
+                  disabled={isLoading}
+                  autoFocus
+                  idPrefix="reset-otp"
+                />
                 <p className="mt-3 text-center text-xs text-muted-foreground">
-                  Enter the 6-digit code sent to your phone
+                  Enter the 6-digit code sent to your {destination}
                 </p>
               </div>
 

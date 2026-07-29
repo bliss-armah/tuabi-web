@@ -116,7 +116,8 @@ export default function AcceptInvite() {
           <CardHeader className="text-center">
             <CardTitle className="text-2xl">Activate your account</CardTitle>
             <CardDescription>
-              Enter the code from your invitation SMS and choose a password.
+              Enter the code from your invitation SMS or email and choose a
+              password.
             </CardDescription>
           </CardHeader>
 
@@ -134,6 +135,9 @@ export default function AcceptInvite() {
                   <Phone className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                   <Input
                     id="phone"
+                    type="tel"
+                    inputMode="tel"
+                    autoComplete="tel"
                     className="pl-9"
                     placeholder="0245289983"
                     value={phoneNumber}
@@ -147,10 +151,16 @@ export default function AcceptInvite() {
                 <Label htmlFor="code">Activation code</Label>
                 <Input
                   id="code"
+                  type="text"
                   inputMode="numeric"
+                  pattern="[0-9]*"
+                  autoComplete="one-time-code"
+                  maxLength={6}
                   placeholder="6-digit code"
                   value={code}
-                  onChange={(e) => setCode(e.target.value)}
+                  onChange={(e) =>
+                    setCode(e.target.value.replace(/\D/g, "").slice(0, 6))
+                  }
                   disabled={isLoading}
                 />
               </div>
