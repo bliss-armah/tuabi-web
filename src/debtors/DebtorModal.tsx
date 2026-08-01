@@ -4,7 +4,7 @@ import {
   useUpdateDebtorMutation,
   usePresignUploadsMutation,
 } from "@/debtors/debtorApi";
-import { Loader2, ImagePlus, X, Camera } from "lucide-react";
+import { Loader2, ImagePlus, X, Camera, MapPin } from "lucide-react";
 import type { Debtor, UploadedImage } from "@/shared/types/debtor";
 import { showSuccessToast } from "@/shared/utils/toastConfig";
 import {
@@ -45,6 +45,7 @@ export default function DebtorModal({
     name: "",
     phoneNumber: "",
     amountOwed: "",
+    location: "",
     description: "",
   });
 
@@ -68,6 +69,7 @@ export default function DebtorModal({
           name: debtor.name,
           phoneNumber: debtor.phoneNumber || "",
           amountOwed: debtor.amountOwed.toString(),
+          location: debtor.location || "",
           description: debtor.description || "",
         });
         setExistingImages(debtor.images ?? []);
@@ -76,6 +78,7 @@ export default function DebtorModal({
           name: "",
           phoneNumber: "",
           amountOwed: "",
+          location: "",
           description: "",
         });
         setExistingImages([]);
@@ -147,6 +150,7 @@ export default function DebtorModal({
             name: formData.name,
             phoneNumber: formData.phoneNumber,
             amountOwed: parseFloat(formData.amountOwed) || 0,
+            location: formData.location,
             description: formData.description,
             ...(newKeys.length ? { addImageKeys: newKeys } : {}),
             ...(removedImageIds.length ? { removeImageIds: removedImageIds } : {}),
@@ -158,6 +162,7 @@ export default function DebtorModal({
           name: formData.name,
           phoneNumber: formData.phoneNumber,
           amountOwed: parseFloat(formData.amountOwed) || 0,
+          location: formData.location,
           description: formData.description,
           ...(newKeys.length ? { imageKeys: newKeys } : {}),
         }).unwrap();
@@ -241,6 +246,24 @@ export default function DebtorModal({
                 setFormData({ ...formData, amountOwed: e.target.value })
               }
             />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="location">Location / Address</Label>
+            <div className="relative">
+              <MapPin className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                id="location"
+                type="text"
+                className="pl-9"
+                maxLength={200}
+                placeholder="e.g. Shop 12, Kaneshie Market, Accra"
+                value={formData.location}
+                onChange={(e) =>
+                  setFormData({ ...formData, location: e.target.value })
+                }
+              />
+            </div>
           </div>
 
           <div className="space-y-2">

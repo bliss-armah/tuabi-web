@@ -50,6 +50,7 @@ interface ReminderModalProps {
   reminder?: Reminder;
   debtorId?: number;
   debtorName?: string;
+  debtorAmountOwed?: number;
   onSuccess?: () => void;
 }
 
@@ -60,8 +61,24 @@ export default function ReminderModal({
   reminder,
   debtorId,
   debtorName,
+  debtorAmountOwed,
   onSuccess,
 }: ReminderModalProps) {
+  const defaultTitle = "Follow up on overdue payment";
+  const defaultMessage = (() => {
+    const amount =
+      typeof debtorAmountOwed === "number"
+        ? `GH\u20B5${debtorAmountOwed.toLocaleString(undefined, {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2,
+          })}`
+        : null;
+    const who = debtorName ? `Hi ${debtorName}, ` : "";
+    return amount
+      ? `${who}please contact us regarding the outstanding payment of ${amount}.`
+      : `${who}please contact us regarding the outstanding payment.`;
+  })();
+
   const [createReminder, { isLoading: isCreating }] =
     useCreateReminderMutation();
   const [updateReminder, { isLoading: isUpdating }] =
@@ -78,8 +95,8 @@ export default function ReminderModal({
     resolver: zodResolver(reminderSchema),
     mode: "onChange",
     defaultValues: {
-      title: "",
-      message: "",
+      title: defaultTitle,
+      message: defaultMessage,
       dueDate: new Date(Date.now() + 24 * 60 * 60 * 1000),
       reminderFrequency: "ONCE" as const,
     },
@@ -99,14 +116,14 @@ export default function ReminderModal({
         });
       } else {
         reset({
-          title: "",
-          message: "",
+          title: defaultTitle,
+          message: defaultMessage,
           dueDate: new Date(Date.now() + 24 * 60 * 60 * 1000),
           reminderFrequency: "ONCE",
         });
       }
     }
-  }, [isOpen, mode, reminder, reset]);
+  }, [isOpen, mode, reminder, reset, defaultTitle, defaultMessage]);
 
   const onSubmit = async (data: FormData) => {
     try {

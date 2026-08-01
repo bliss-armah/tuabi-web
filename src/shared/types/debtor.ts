@@ -21,6 +21,7 @@ export interface Debtor {
   name: string;
   amountOwed: number;
   description?: string;
+  location?: string | null;
   phoneNumber?: string;
   imageUrl?: string | null;
   images?: UploadedImage[];
@@ -81,6 +82,7 @@ export interface CreateDebtorRequest {
   name: string;
   amountOwed: number;
   description?: string;
+  location?: string;
   phoneNumber?: string;
   imageKey?: string;
   imageKeys?: string[];
@@ -90,6 +92,7 @@ export interface UpdateDebtorRequest {
   name?: string;
   amountOwed?: number;
   description?: string;
+  location?: string;
   phoneNumber?: string;
   imageKey?: string;
   addImageKeys?: string[];

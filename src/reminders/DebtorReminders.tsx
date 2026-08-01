@@ -25,11 +25,13 @@ import {
 interface DebtorRemindersProps {
   debtorId: number;
   debtorName: string;
+  debtorAmountOwed?: number;
 }
 
 export default function DebtorReminders({
   debtorId,
   debtorName,
+  debtorAmountOwed,
 }: DebtorRemindersProps) {
   const { showDeleteConfirmation, DeleteDialog } = useDeleteConfirmation();
   const [modalVisible, setModalVisible] = useState(false);
@@ -267,6 +269,7 @@ export default function DebtorReminders({
         reminder={editingReminder}
         debtorId={debtorId}
         debtorName={debtorName}
+        debtorAmountOwed={debtorAmountOwed}
         onSuccess={() => {
           refetch();
         }}

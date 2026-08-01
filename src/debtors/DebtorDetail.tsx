@@ -8,7 +8,7 @@ import {
   useGetDebtorQuery,
   useGetDebtorHistoryQuery,
 } from "@/debtors/debtorApi";
-import { ArrowLeft, Phone, Bell } from "lucide-react";
+import { ArrowLeft, Phone, Bell, MapPin } from "lucide-react";
 import { useState, useEffect } from "react";
 import DebtorModal from "@/debtors/DebtorModal";
 import PaymentModal from "@/debtors/PaymentModal";
@@ -386,6 +386,7 @@ export default function DebtorDetail() {
                   <DebtorReminders
                     debtorId={debtorId}
                     debtorName={debtorData.name}
+                    debtorAmountOwed={debtorData.amountOwed}
                   />
                 )}
               </div>
@@ -442,6 +443,23 @@ export default function DebtorDetail() {
                       </div>
                     </div>
                   </button>
+                )}
+
+                {debtorData.location && (
+                  <div className="flex flex-col gap-[7px] rounded-[16px] border border-border bg-card px-5 py-[18px]">
+                    <div
+                      className={cn(
+                        eyebrow,
+                        "tracking-[0.12em] text-muted-foreground"
+                      )}
+                    >
+                      LOCATION
+                    </div>
+                    <div className="flex items-start gap-2 text-[15px] font-semibold leading-[1.5]">
+                      <MapPin className="mt-[3px] h-4 w-4 shrink-0 text-muted-foreground" />
+                      <span>{debtorData.location}</span>
+                    </div>
+                  </div>
                 )}
 
                 {debtorData.description && (
