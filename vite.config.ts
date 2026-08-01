@@ -11,7 +11,22 @@ export default defineConfig({
       registerType: "autoUpdate",
       workbox: {
         globPatterns: ["**/*.{js,css,html,ico,png,svg}"],
+        globIgnores: [
+          "**/jspdf*.js",
+          "**/html2canvas*.js",
+          "**/purify.es*.js",
+          "**/index.es-*.js",
+        ],
         runtimeCaching: [
+          {
+            urlPattern: /\/assets\/(jspdf|html2canvas|purify|index\.es)[-.].*\.js$/i,
+            handler: "CacheFirst",
+            options: {
+              cacheName: "pdf-export-chunks",
+              expiration: { maxEntries: 10 },
+              cacheableResponse: { statuses: [0, 200] },
+            },
+          },
           {
             urlPattern: /\/api\/.*/i,
             handler: "NetworkFirst",

@@ -8,7 +8,7 @@ import {
   useGetDebtorQuery,
   useGetDebtorHistoryQuery,
 } from "@/debtors/debtorApi";
-import { ArrowLeft, Phone, Bell, MapPin } from "lucide-react";
+import { ArrowLeft, Phone, Bell, MapPin, Download, Loader2 } from "lucide-react";
 import { useState, useEffect } from "react";
 import DebtorModal from "@/debtors/DebtorModal";
 import PaymentModal from "@/debtors/PaymentModal";
@@ -20,6 +20,8 @@ import {
 import { cn } from "@/shared/utils/utils";
 import { formatPhoneNumber } from "@/debtors/utils/debtorUtils";
 import DebtorReminders from "@/reminders/DebtorReminders";
+import { useAuth } from "@/shared/hooks/useAuth";
+import { showSuccessToast, showErrorToast } from "@/shared/utils/toastConfig";
 
 interface HistoryItem {
   id: number;
@@ -85,6 +87,8 @@ export default function DebtorDetail() {
   const [activeTab, setActiveTab] = useState<"transactions" | "reminders">(
     "transactions"
   );
+  const [isExporting, setIsExporting] = useState(false);
+  const { user, workspace } = useAuth();
 
   useEffect(() => {
     const tabParam = searchParams.get("tab");
@@ -145,6 +149,35 @@ export default function DebtorDetail() {
   const initials = debtorData ? initialsOf(debtorData.name) : "?";
   const daysUnchanged = lastActivityAt ? daysBetween(lastActivityAt) : 0;
 
+  const handleExportPdf = async () => {
+    if (!debtorData) return;
+    setIsExporting(true);
+    try {
+      const { exportDebtorHistoryPdf } = await import(
+        "@/debtors/utils/exportDebtorHistoryPdf"
+      );
+      await exportDebtorHistoryPdf({
+        debtor: {
+          name: debtorData.name,
+          phoneNumber: debtorData.phoneNumber,
+          location: debtorData.location,
+          description: debtorData.description,
+          amountOwed: debtorData.amountOwed,
+          createdAt: debtorData.createdAt,
+        },
+        entries,
+        workspaceName: workspace?.name,
+        generatedBy: user?.name,
+      });
+      showSuccessToast("Statement downloaded");
+    } catch (err) {
+      console.error("PDF export failed:", err);
+      showErrorToast("Could not generate the PDF. Please try again.");
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
   return (
     <DataFetchWrapper
       isLoading={isLoading || historyLoading}
@@ -181,6 +214,23 @@ export default function DebtorDetail() {
               </div>
 
               <div className="flex shrink-0 items-center gap-[10px]">
+                <button
+                  type="button"
+                  onClick={handleExportPdf}
+                  disabled={isExporting}
+                  className={cn(
+                    bordered,
+                    "flex flex-1 items-center justify-center gap-2 whitespace-nowrap px-[18px] py-[11px] text-center text-[14px] font-semibold disabled:cursor-not-allowed disabled:opacity-60 sm:flex-none"
+                  )}
+                  aria-label="Export statement as PDF"
+                >
+                  {isExporting ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Download className="h-4 w-4" />
+                  )}
+                  {isExporting ? "Preparing..." : "Export PDF"}
+                </button>
                 <button
                   type="button"
                   onClick={() => setIsDebtorModalOpen(true)}
