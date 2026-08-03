@@ -1,5 +1,6 @@
 import { createApi } from "@reduxjs/toolkit/query/react";
 import { baseQueryWithErrorHandling } from "@/shared/utils/api";
+import { historyApi } from "@/history/historyApi";
 import type {
   DebtorResponse,
   DebtorsListResponse,
@@ -12,6 +13,24 @@ import type {
   PresignRequest,
   PresignResponse,
 } from "@/shared/types/debtor";
+
+/**
+ * The standalone History page lives in its own API slice, and RTK Query tags do
+ * not cross slices — so anything that writes a debt_history row has to tell it.
+ */
+const invalidateHistoryPage = {
+  async onQueryStarted(
+    _arg: unknown,
+    { dispatch, queryFulfilled }: { dispatch: any; queryFulfilled: Promise<unknown> }
+  ) {
+    try {
+      await queryFulfilled;
+      dispatch(historyApi.util.invalidateTags(["History"]));
+    } catch {
+      // A failed mutation changed nothing, so there is nothing to invalidate.
+    }
+  },
+};
 
 export const debtorApi = createApi({
   reducerPath: "debtorApi",
@@ -43,7 +62,8 @@ export const debtorApi = createApi({
         method: "POST",
         body: debtor,
       }),
-      invalidatesTags: ["Debtors", "Dashboard"],
+      invalidatesTags: ["Debtors", "Dashboard", "DebtHistory"],
+      ...invalidateHistoryPage,
     }),
 
     updateDebtor: builder.mutation<DebtorResponse, { id: number; data: UpdateDebtorRequest }>({
@@ -55,8 +75,11 @@ export const debtorApi = createApi({
       invalidatesTags: (_result, _error, { id }) => [
         "Debtors",
         "Dashboard",
+        "DebtHistory",
         { type: "Debtor", id },
+        { type: "DebtHistory", id },
       ],
+      ...invalidateHistoryPage,
     }),
 
     incrementDebtorAmount: builder.mutation<
@@ -71,8 +94,11 @@ export const debtorApi = createApi({
       invalidatesTags: (_result, _error, { id }) => [
         "Debtors",
         "Dashboard",
+        "DebtHistory",
         { type: "Debtor", id },
+        { type: "DebtHistory", id },
       ],
+      ...invalidateHistoryPage,
     }),
 
     decrementDebtorAmount: builder.mutation<
@@ -87,8 +113,11 @@ export const debtorApi = createApi({
       invalidatesTags: (_result, _error, { id }) => [
         "Debtors",
         "Dashboard",
+        "DebtHistory",
         { type: "Debtor", id },
+        { type: "DebtHistory", id },
       ],
+      ...invalidateHistoryPage,
     }),
 
     getDebtorHistory: builder.query<
