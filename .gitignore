@@ -31,4 +31,5 @@ dist-ssr
 # Env files
 .env
 .env.local
+.env.sentry-build-plugin
 

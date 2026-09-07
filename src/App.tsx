@@ -5,6 +5,7 @@ import {
   Navigate,
 } from "react-router-dom";
 import { Provider } from "react-redux";
+import * as Sentry from "@sentry/react";
 import { useEffect } from "react";
 import { store } from "./shared/store";
 import { useAuth } from "./shared/hooks/useAuth";
@@ -34,8 +35,10 @@ import WorkspaceSettings from "./workspace/WorkspaceSettings";
 import History from "./history/History";
 import HistoryDetail from "./history/HistoryDetail";
 import type { UserRole } from "./shared/types/auth";
+import { useSentryUser } from "./monitoring/useSentryUser";
 
 import Layout from "./shared/components/Layout";
+import ErrorState from "./shared/components/ErrorState";
 import ServerStatusBanner from "./shared/components/ServerStatusBanner";
 import { ThemeProvider } from "./shared/components/theme-provider";
 import { TooltipProvider } from "./shared/components/ui/tooltip";
@@ -43,9 +46,34 @@ import { Toaster } from "./shared/components/ui/sonner";
 import { toast } from "sonner";
 import "./index.css";
 
+const SentryRoutes = Sentry.withSentryReactRouterV6Routing(Routes);
+
+const AppCrashFallback = () => (
+  <ErrorState
+    variant="page"
+    title="Something went wrong"
+    message="The app hit an unexpected error. Reloading usually fixes it."
+    actionLabel="Reload"
+    onAction={() => window.location.reload()}
+  />
+);
+
+const NotFoundRedirect = () => {
+  useEffect(() => {
+    Sentry.captureMessage(
+      `Unmatched route: ${window.location.pathname}`,
+      "warning"
+    );
+  }, []);
+
+  return <Navigate to="/" replace />;
+};
+
 // Protected Route Component
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { user, loading } = useAuth();
+
+  useSentryUser(user);
 
   if (loading) {
     return (
@@ -226,168 +254,170 @@ const NotificationEventHandler = () => {
 function App() {
   return (
     <ThemeProvider>
-      <Provider store={store}>
-        <TooltipProvider delayDuration={200}>
-          <ServerStatusBanner />
-          <NotificationEventHandler />
-          <Router>
-            <div className="min-h-screen bg-background text-foreground">
-              <Routes>
-                <Route path="/login" element={<Login />} />
-                <Route path="/register" element={<Navigate to="/login" replace />} />
-                <Route path="/accept-invite" element={<AcceptInvite />} />
-                <Route path="/otp-verification" element={<OTPVerification />} />
-                <Route path="/forgot-password" element={<ForgotPassword />} />
-                <Route path="/reset-password" element={<ResetPassword />} />
+      <Sentry.ErrorBoundary fallback={<AppCrashFallback />}>
+        <Provider store={store}>
+          <TooltipProvider delayDuration={200}>
+            <ServerStatusBanner />
+            <NotificationEventHandler />
+            <Router>
+              <div className="min-h-screen bg-background text-foreground">
+                <SentryRoutes>
+                  <Route path="/login" element={<Login />} />
+                  <Route path="/register" element={<Navigate to="/login" replace />} />
+                  <Route path="/accept-invite" element={<AcceptInvite />} />
+                  <Route path="/otp-verification" element={<OTPVerification />} />
+                  <Route path="/forgot-password" element={<ForgotPassword />} />
+                  <Route path="/reset-password" element={<ResetPassword />} />
 
-                <Route
-                  path="/"
-                  element={
-                    <ProtectedLayout>
-                      <HomeRoute />
-                    </ProtectedLayout>
-                  }
-                />
+                  <Route
+                    path="/"
+                    element={
+                      <ProtectedLayout>
+                        <HomeRoute />
+                      </ProtectedLayout>
+                    }
+                  />
 
-                {/* Super-admin platform console */}
-                <Route
-                  path="/admin"
-                  element={
-                    <ProtectedLayout allowedRoles={["SUPER_ADMIN"]}>
-                      <AdminDashboard />
-                    </ProtectedLayout>
-                  }
-                />
-                <Route
-                  path="/admin/audit"
-                  element={
-                    <ProtectedLayout allowedRoles={["SUPER_ADMIN"]}>
-                      <AuditLog />
-                    </ProtectedLayout>
-                  }
-                />
+                  {/* Super-admin platform console */}
+                  <Route
+                    path="/admin"
+                    element={
+                      <ProtectedLayout allowedRoles={["SUPER_ADMIN"]}>
+                        <AdminDashboard />
+                      </ProtectedLayout>
+                    }
+                  />
+                  <Route
+                    path="/admin/audit"
+                    element={
+                      <ProtectedLayout allowedRoles={["SUPER_ADMIN"]}>
+                        <AuditLog />
+                      </ProtectedLayout>
+                    }
+                  />
 
-                {/* Workspace members (owner + keeper) */}
-                <Route
-                  path="/debtors"
-                  element={
-                    <ProtectedLayout allowedRoles={["USER", "ADMIN"]}>
-                      <Debtors />
-                    </ProtectedLayout>
-                  }
-                />
-                <Route
-                  path="/debtors/:id"
-                  element={
-                    <ProtectedLayout allowedRoles={["USER", "ADMIN"]}>
-                      <DebtorDetail />
-                    </ProtectedLayout>
-                  }
-                />
+                  {/* Workspace members (owner + keeper) */}
+                  <Route
+                    path="/debtors"
+                    element={
+                      <ProtectedLayout allowedRoles={["USER", "ADMIN"]}>
+                        <Debtors />
+                      </ProtectedLayout>
+                    }
+                  />
+                  <Route
+                    path="/debtors/:id"
+                    element={
+                      <ProtectedLayout allowedRoles={["USER", "ADMIN"]}>
+                        <DebtorDetail />
+                      </ProtectedLayout>
+                    }
+                  />
 
-                {/* Transaction history (workspace members) */}
-                <Route
-                  path="/history"
-                  element={
-                    <ProtectedLayout allowedRoles={["USER", "ADMIN"]}>
-                      <History />
-                    </ProtectedLayout>
-                  }
-                />
-                <Route
-                  path="/history/:id"
-                  element={
-                    <ProtectedLayout allowedRoles={["USER", "ADMIN"]}>
-                      <HistoryDetail />
-                    </ProtectedLayout>
-                  }
-                />
+                  {/* Transaction history (workspace members) */}
+                  <Route
+                    path="/history"
+                    element={
+                      <ProtectedLayout allowedRoles={["USER", "ADMIN"]}>
+                        <History />
+                      </ProtectedLayout>
+                    }
+                  />
+                  <Route
+                    path="/history/:id"
+                    element={
+                      <ProtectedLayout allowedRoles={["USER", "ADMIN"]}>
+                        <HistoryDetail />
+                      </ProtectedLayout>
+                    }
+                  />
 
-                <Route
-                  path="/notifications"
-                  element={
-                    <ProtectedLayout>
-                      <Notifications />
-                    </ProtectedLayout>
-                  }
-                />
+                  <Route
+                    path="/notifications"
+                    element={
+                      <ProtectedLayout>
+                        <Notifications />
+                      </ProtectedLayout>
+                    }
+                  />
 
-                {/* Owner-only: billing, team, workspace settings */}
-                <Route
-                  path="/plans"
-                  element={
-                    <ProtectedLayout allowedRoles={["ADMIN"]}>
-                      <BillingRoute>
-                        <Plans />
-                      </BillingRoute>
-                    </ProtectedLayout>
-                  }
-                />
-                <Route
-                  path="/team"
-                  element={
-                    <ProtectedLayout allowedRoles={["ADMIN"]}>
-                      <Team />
-                    </ProtectedLayout>
-                  }
-                />
-                <Route
-                  path="/workspace-settings"
-                  element={
-                    <ProtectedLayout allowedRoles={["ADMIN"]}>
-                      <WorkspaceSettings />
-                    </ProtectedLayout>
-                  }
-                />
+                  {/* Owner-only: billing, team, workspace settings */}
+                  <Route
+                    path="/plans"
+                    element={
+                      <ProtectedLayout allowedRoles={["ADMIN"]}>
+                        <BillingRoute>
+                          <Plans />
+                        </BillingRoute>
+                      </ProtectedLayout>
+                    }
+                  />
+                  <Route
+                    path="/team"
+                    element={
+                      <ProtectedLayout allowedRoles={["ADMIN"]}>
+                        <Team />
+                      </ProtectedLayout>
+                    }
+                  />
+                  <Route
+                    path="/workspace-settings"
+                    element={
+                      <ProtectedLayout allowedRoles={["ADMIN"]}>
+                        <WorkspaceSettings />
+                      </ProtectedLayout>
+                    }
+                  />
 
-                <Route
-                  path="/profile"
-                  element={
-                    <ProtectedLayout>
-                      <Profile />
-                    </ProtectedLayout>
-                  }
-                />
-                <Route
-                  path="/profile/account-settings"
-                  element={
-                    <ProtectedLayout>
-                      <AccountSettings />
-                    </ProtectedLayout>
-                  }
-                />
-                <Route
-                  path="/profile/change-password"
-                  element={
-                    <ProtectedLayout>
-                      <ChangePassword />
-                    </ProtectedLayout>
-                  }
-                />
-                <Route
-                  path="/profile/privacy-security"
-                  element={
-                    <ProtectedLayout>
-                      <PrivacySecurity />
-                    </ProtectedLayout>
-                  }
-                />
-                <Route
-                  path="/profile/help-support"
-                  element={
-                    <ProtectedLayout>
-                      <HelpSupport />
-                    </ProtectedLayout>
-                  }
-                />
+                  <Route
+                    path="/profile"
+                    element={
+                      <ProtectedLayout>
+                        <Profile />
+                      </ProtectedLayout>
+                    }
+                  />
+                  <Route
+                    path="/profile/account-settings"
+                    element={
+                      <ProtectedLayout>
+                        <AccountSettings />
+                      </ProtectedLayout>
+                    }
+                  />
+                  <Route
+                    path="/profile/change-password"
+                    element={
+                      <ProtectedLayout>
+                        <ChangePassword />
+                      </ProtectedLayout>
+                    }
+                  />
+                  <Route
+                    path="/profile/privacy-security"
+                    element={
+                      <ProtectedLayout>
+                        <PrivacySecurity />
+                      </ProtectedLayout>
+                    }
+                  />
+                  <Route
+                    path="/profile/help-support"
+                    element={
+                      <ProtectedLayout>
+                        <HelpSupport />
+                      </ProtectedLayout>
+                    }
+                  />
 
-                <Route path="*" element={<Navigate to="/" replace />} />
-              </Routes>
-            </div>
-          </Router>
-          <Toaster position="top-right" richColors closeButton />
-        </TooltipProvider>
-      </Provider>
+                  <Route path="*" element={<NotFoundRedirect />} />
+                </SentryRoutes>
+              </div>
+            </Router>
+            <Toaster position="top-right" richColors closeButton />
+          </TooltipProvider>
+        </Provider>
+      </Sentry.ErrorBoundary>
     </ThemeProvider>
   );
 }

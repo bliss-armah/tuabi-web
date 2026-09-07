@@ -1,99 +1,126 @@
-import { defineConfig } from "vite";
+import { defineConfig, loadEnv } from "vite";
 import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
 import { VitePWA } from "vite-plugin-pwa";
+import { sentryVitePlugin } from "@sentry/vite-plugin";
 
-export default defineConfig({
-  plugins: [
-    react(),
-    tailwindcss(),
-    VitePWA({
-      registerType: "autoUpdate",
-      workbox: {
-        globPatterns: ["**/*.{js,css,html,ico,png,svg}"],
-        globIgnores: [
-          "**/jspdf*.js",
-          "**/html2canvas*.js",
-          "**/purify.es*.js",
-          "**/index.es-*.js",
-        ],
-        runtimeCaching: [
-          {
-            urlPattern: /\/assets\/(jspdf|html2canvas|purify|index\.es)[-.].*\.js$/i,
-            handler: "CacheFirst",
-            options: {
-              cacheName: "pdf-export-chunks",
-              expiration: { maxEntries: 10 },
-              cacheableResponse: { statuses: [0, 200] },
-            },
-          },
-          {
-            urlPattern: /\/api\/.*/i,
-            handler: "NetworkFirst",
-            options: {
-              cacheName: "api-cache",
-              expiration: {
-                maxEntries: 100,
-                maxAgeSeconds: 60 * 60 * 24, // 24 hours
+export default defineConfig(({ mode }) => {
+  const fileEnv = loadEnv(mode, process.cwd(), "");
+  const read = (key: string) => process.env[key] || fileEnv[key] || undefined;
+
+  const authToken = read("SENTRY_AUTH_TOKEN");
+  const org = read("SENTRY_ORG");
+  const project = read("SENTRY_PROJECT");
+
+  const sentryPlugins =
+    authToken && org && project
+      ? [
+          sentryVitePlugin({
+            org,
+            project,
+            authToken,
+            release: { name: read("VITE_APP_VERSION") },
+            sourcemaps: { filesToDeleteAfterUpload: ["./dist/**/*.map"] },
+          }),
+        ]
+      : [];
+
+  const uploadsToSentry = sentryPlugins.length > 0;
+
+  return {
+    plugins: [
+      react(),
+      tailwindcss(),
+      VitePWA({
+        registerType: "autoUpdate",
+        workbox: {
+          sourcemap: false,
+          globPatterns: ["**/*.{js,css,html,ico,png,svg}"],
+          globIgnores: [
+            "**/jspdf*.js",
+            "**/html2canvas*.js",
+            "**/purify.es*.js",
+            "**/index.es-*.js",
+          ],
+          runtimeCaching: [
+            {
+              urlPattern: /\/assets\/(jspdf|html2canvas|purify|index\.es)[-.].*\.js$/i,
+              handler: "CacheFirst",
+              options: {
+                cacheName: "pdf-export-chunks",
+                expiration: { maxEntries: 10 },
+                cacheableResponse: { statuses: [0, 200] },
               },
-              cacheableResponse: {
-                statuses: [0, 200],
+            },
+            {
+              urlPattern: /\/api\/.*/i,
+              handler: "NetworkFirst",
+              options: {
+                cacheName: "api-cache",
+                expiration: {
+                  maxEntries: 100,
+                  maxAgeSeconds: 60 * 60 * 24, // 24 hours
+                },
+                cacheableResponse: {
+                  statuses: [0, 200],
+                },
               },
             },
-          },
+          ],
+        },
+        includeAssets: [
+          "favicon.ico",
+          "apple-touch-icon.png",
+          "masked-icon.svg",
         ],
+        manifest: {
+          name: "Tuabi - Debt Management",
+          short_name: "Tuabi",
+          description: "Manage your debtors and track payments efficiently",
+          theme_color: "#3b82f6",
+          background_color: "#f8fafc",
+          display: "standalone",
+          orientation: "portrait",
+          scope: "/",
+          start_url: "/",
+          icons: [
+            {
+              src: "fav.png",
+              sizes: "192x192",
+              type: "image/png",
+            },
+            {
+              src: "fav.png",
+              sizes: "512x512",
+              type: "image/png",
+            },
+            {
+              src: "fav.png",
+              sizes: "512x512",
+              type: "image/png",
+              purpose: "any maskable",
+            },
+          ],
+        },
+      }),
+      ...sentryPlugins,
+    ],
+    resolve: {
+      alias: {
+        "@": "/src",
       },
-      includeAssets: [
-        "favicon.ico",
-        "apple-touch-icon.png",
-        "masked-icon.svg",
-      ],
-      manifest: {
-        name: "Tuabi - Debt Management",
-        short_name: "Tuabi",
-        description: "Manage your debtors and track payments efficiently",
-        theme_color: "#3b82f6",
-        background_color: "#f8fafc",
-        display: "standalone",
-        orientation: "portrait",
-        scope: "/",
-        start_url: "/",
-        icons: [
-          {
-            src: "fav.png",
-            sizes: "192x192",
-            type: "image/png",
-          },
-          {
-            src: "fav.png",
-            sizes: "512x512",
-            type: "image/png",
-          },
-          {
-            src: "fav.png",
-            sizes: "512x512",
-            type: "image/png",
-            purpose: "any maskable",
-          },
-        ],
-      },
-    }),
-  ],
-  resolve: {
-    alias: {
-      "@": "/src",
     },
-  },
-  server: {
-    port: 3000,
-    host: true,
-    allowedHosts: [""],
-    watch:{
-      usePolling: true
-    }
-  },
-  build: {
-    outDir: "dist",
-    sourcemap: true,
-  },
+    server: {
+      port: 3000,
+      host: true,
+      allowedHosts: [""],
+      watch:{
+        usePolling: true
+      }
+    },
+    build: {
+      outDir: "dist",
+      sourcemap: uploadsToSentry ? "hidden" : false,
+    },
+  };
 });
