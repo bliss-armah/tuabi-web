@@ -1,5 +1,6 @@
 import { fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import { getBaseUrl } from "@/config/api";
+import { captureApiError } from "@/monitoring/captureApiError";
 
 // Get base URL from configuration
 const baseUrl = getBaseUrl();
@@ -64,6 +65,7 @@ export const baseQueryWithErrorHandling = async (
         path: args.url,
       };
       console.error("API Error:", errorDetails);
+      captureApiError(result.error, args);
 
       // Handle CORS errors specifically
       if (result.error.status === 0 || result.error.status === "FETCH_ERROR") {
@@ -109,6 +111,7 @@ export const baseQueryWithErrorHandling = async (
   } catch (error) {
     emitServerStatus(false);
     console.error("Network or CORS Error:", error);
+    captureApiError(error, args);
     return {
       error: {
         status: "NETWORK_ERROR",
