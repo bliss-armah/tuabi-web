@@ -28,5 +28,7 @@ RUN --mount=type=secret,id=SENTRY_AUTH_TOKEN \
 FROM nginx:alpine AS serve
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 COPY --from=build /app/dist /usr/share/nginx/html
+COPY runtime-env.sh /docker-entrypoint.d/40-runtime-env.sh
+RUN chmod +x /docker-entrypoint.d/40-runtime-env.sh
 EXPOSE 80
 CMD ["nginx", "-g", "daemon off;"]
