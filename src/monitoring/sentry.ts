@@ -6,15 +6,26 @@ import {
   useNavigationType,
 } from "react-router-dom";
 import * as Sentry from "@sentry/react";
+import { readRuntimeEnv } from "./runtimeEnv";
 
-const dsn = import.meta.env.VITE_SENTRY_DSN;
+const dsn = readRuntimeEnv("VITE_SENTRY_DSN");
+
+const resolveApiOrigin = (): string | undefined => {
+  try {
+    return new URL(import.meta.env.VITE_API_BASE_URL).origin;
+  } catch {
+    return undefined;
+  }
+};
+
+const apiOrigin = resolveApiOrigin();
 
 if (dsn) {
   Sentry.init({
     dsn,
     skipBrowserExtensionCheck: true,
-    environment: import.meta.env.VITE_SENTRY_ENVIRONMENT || "production",
-    release: import.meta.env.VITE_APP_VERSION || undefined,
+    environment: readRuntimeEnv("VITE_SENTRY_ENVIRONMENT") || "production",
+    release: readRuntimeEnv("VITE_APP_VERSION"),
     integrations: [
       Sentry.reactRouterV6BrowserTracingIntegration({
         useEffect,
@@ -25,7 +36,7 @@ if (dsn) {
       }),
     ],
     tracesSampleRate: 1,
-    tracePropagationTargets: [/^\//],
+    tracePropagationTargets: apiOrigin ? [/^\//, apiOrigin] : [/^\//],
     ignoreErrors: [
       "ResizeObserver loop",
       "AbortError",

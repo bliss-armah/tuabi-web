@@ -41,6 +41,7 @@ export default defineConfig(({ mode }) => {
             "**/html2canvas*.js",
             "**/purify.es*.js",
             "**/index.es-*.js",
+            "**/runtime-env.js",
           ],
           runtimeCaching: [
             {
