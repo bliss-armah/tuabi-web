@@ -34,6 +34,7 @@ if (dsn) {
         createRoutesFromChildren,
         matchRoutes,
       }),
+      Sentry.consoleLoggingIntegration({ levels: ["warn", "error"] }),
     ],
     tracesSampleRate: 1,
     tracePropagationTargets: apiOrigin ? [/^\//, apiOrigin] : [/^\//],
