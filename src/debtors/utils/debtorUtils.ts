@@ -1,5 +1,17 @@
 import type { Debtor } from "@/shared/types/debtor";
 
+export const isInCredit = (amountOwed: number | undefined) =>
+  (amountOwed ?? 0) < 0;
+
+export const formatAmountOwed = (amountOwed: number | undefined) =>
+  `GH₵ ${Math.abs(amountOwed ?? 0).toLocaleString()}`;
+
+export const amountOwedLabel = (amountOwed: number | undefined) =>
+  isInCredit(amountOwed) ? "Credit" : "Amount Owed";
+
+export const amountOwedTextClass = (amountOwed: number | undefined) =>
+  isInCredit(amountOwed) ? "text-success" : "text-destructive";
+
 /**
  * Filter debtors based on search term
  */
@@ -69,7 +81,10 @@ export const formatPhoneNumber = (phoneNumber: string): string => {
  * Calculate total debt amount
  */
 export const calculateTotalDebt = (debtors: Debtor[]): number => {
-  return debtors.reduce((total, debtor) => total + (debtor.amountOwed || 0), 0);
+  return debtors.reduce(
+    (total, debtor) => total + Math.max(0, debtor.amountOwed || 0),
+    0
+  );
 };
 
 /**

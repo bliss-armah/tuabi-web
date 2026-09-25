@@ -30,6 +30,11 @@ import {
   SelectValue,
 } from "@/shared/components/ui/select";
 import { cn } from "@/shared/utils/utils";
+import {
+  amountOwedTextClass,
+  formatAmountOwed,
+  isInCredit,
+} from "@/debtors/utils/debtorUtils";
 
 interface PaymentModalProps {
   isOpen: boolean;
@@ -154,6 +159,12 @@ export default function PaymentModal({
     },
   ];
 
+  const enteredAmount = parseFloat(formData.amount) || 0;
+  const overpayment =
+    formData.action === "reduce"
+      ? enteredAmount - Math.max(0, debtor.amountOwed)
+      : 0;
+
   const selectedOption = actionOptions.find(
     (o) => o.value === formData.action
   );
@@ -168,9 +179,17 @@ export default function PaymentModal({
         <div className="rounded-xl bg-muted p-4">
           <h3 className="font-semibold text-foreground">{debtor.name}</h3>
           <p className="text-sm text-muted-foreground">
-            Current Amount Owed:{" "}
-            <span className="font-semibold text-destructive">
-              GH₵ {debtor.amountOwed.toLocaleString()}
+            {isInCredit(debtor.amountOwed)
+              ? "Current Credit"
+              : "Current Amount Owed"}
+            :{" "}
+            <span
+              className={cn(
+                "font-semibold",
+                amountOwedTextClass(debtor.amountOwed)
+              )}
+            >
+              {formatAmountOwed(debtor.amountOwed)}
             </span>
           </p>
         </div>
@@ -210,6 +229,9 @@ export default function PaymentModal({
                   <SelectItem
                     key={option.value}
                     value={option.value}
+                    disabled={
+                      option.value === "settled" && debtor.amountOwed <= 0
+                    }
                     className="items-start py-2.5"
                   >
                     <span className="flex items-start gap-2.5">
@@ -251,6 +273,12 @@ export default function PaymentModal({
                   setFormData({ ...formData, amount: e.target.value })
                 }
               />
+              {overpayment > 0 && (
+                <p className="text-sm text-success">
+                  GH₵ {overpayment.toLocaleString()} more than owed — it will be
+                  saved as credit for {debtor.name}.
+                </p>
+              )}
             </div>
           )}
 

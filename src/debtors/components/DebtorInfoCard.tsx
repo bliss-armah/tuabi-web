@@ -3,6 +3,12 @@ import { Card, CardContent } from "@/shared/components/ui/card";
 import { Separator } from "@/shared/components/ui/separator";
 import { cn } from "@/shared/utils/utils";
 import type { Debtor } from "@/shared/types/debtor";
+import {
+  amountOwedLabel,
+  amountOwedTextClass,
+  formatAmountOwed,
+  isInCredit,
+} from "@/debtors/utils/debtorUtils";
 
 interface DebtorInfoCardProps {
   debtor: Debtor;
@@ -30,10 +36,12 @@ export default function DebtorInfoCard({ debtor }: DebtorInfoCardProps) {
       : []),
     {
       icon: Banknote,
-      label: "Amount Owed",
-      value: `GH₵ ${debtor.amountOwed?.toLocaleString() || 0}`,
-      iconClass: "bg-destructive/10 text-destructive",
-      valueClass: "text-destructive",
+      label: amountOwedLabel(debtor.amountOwed),
+      value: formatAmountOwed(debtor.amountOwed),
+      iconClass: isInCredit(debtor.amountOwed)
+        ? "bg-success/10 text-success"
+        : "bg-destructive/10 text-destructive",
+      valueClass: amountOwedTextClass(debtor.amountOwed),
     },
     {
       icon: Calendar,
