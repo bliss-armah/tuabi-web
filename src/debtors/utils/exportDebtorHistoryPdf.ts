@@ -95,7 +95,7 @@ export const exportDebtorHistoryPdf = async ({
       dateTime(entry.timestamp),
       actionLabel(entry.action),
       `${isPayment(entry.action) ? "-" : "+"}${money(entry.amountChanged)}`,
-      money(running),
+      running < 0 ? `${money(-running)} credit` : money(running),
       entry.note?.trim() || "—",
       entry.user?.name?.trim() || "—",
     ];
@@ -157,7 +157,9 @@ export const exportDebtorHistoryPdf = async ({
   });
 
   const summary: Array<[string, string]> = [
-    ["Outstanding balance", money(debtor.amountOwed)],
+    debtor.amountOwed < 0
+      ? ["Credit balance", money(-debtor.amountOwed)]
+      : ["Outstanding balance", money(debtor.amountOwed)],
     ["Total debt added", money(totalAdded)],
     ["Total paid", money(totalPaid)],
     ["Transactions", String(oldestFirst.length)],

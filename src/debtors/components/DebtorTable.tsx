@@ -16,6 +16,11 @@ import {
   DropdownMenuItem,
 } from "@/shared/components/ui/dropdown-menu";
 import type { Debtor } from "@/shared/types/debtor";
+import {
+  amountOwedTextClass,
+  formatAmountOwed,
+  isInCredit,
+} from "@/debtors/utils/debtorUtils";
 
 interface DebtorTableProps {
   debtors: Debtor[];
@@ -66,9 +71,14 @@ export default function DebtorTable({
                   )}
                 </TableCell>
                 <TableCell className="text-right">
-                  <span className="text-lg font-bold text-destructive">
-                    GH₵ {debtor.amountOwed?.toLocaleString() || 0}
+                  <span
+                    className={`text-lg font-bold ${amountOwedTextClass(debtor.amountOwed)}`}
+                  >
+                    {formatAmountOwed(debtor.amountOwed)}
                   </span>
+                  {isInCredit(debtor.amountOwed) && (
+                    <span className="block text-xs text-success">Credit</span>
+                  )}
                 </TableCell>
                 <TableCell>
                   <p className="max-w-48 truncate text-sm text-muted-foreground">

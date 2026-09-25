@@ -14,6 +14,11 @@ import {
 } from "@/shared/components/ui/dropdown-menu";
 import { cn } from "@/shared/utils/utils";
 import type { Debtor } from "@/shared/types/debtor";
+import {
+  amountOwedLabel,
+  amountOwedTextClass,
+  formatAmountOwed,
+} from "@/debtors/utils/debtorUtils";
 
 interface DebtorCardProps {
   debtor: Debtor;
@@ -74,11 +79,16 @@ export default function DebtorCard({
           </div>
           <div className="flex items-start gap-2">
             <div className="text-right">
-              <p className="text-2xl font-bold text-destructive">
-                GH₵ {debtor.amountOwed?.toLocaleString() || 0}
+              <p
+                className={cn(
+                  "text-2xl font-bold",
+                  amountOwedTextClass(debtor.amountOwed)
+                )}
+              >
+                {formatAmountOwed(debtor.amountOwed)}
               </p>
               <p className="whitespace-nowrap text-xs text-muted-foreground">
-                Amount Owed
+                {amountOwedLabel(debtor.amountOwed)}
               </p>
             </div>
             <div className="hidden md:block">

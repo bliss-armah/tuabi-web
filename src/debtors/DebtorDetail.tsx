@@ -128,6 +128,7 @@ export default function DebtorDetail() {
   const hasPayments = payments.length > 0;
 
   const balance = debtorData?.amountOwed ?? 0;
+  const inCredit = balance < 0;
   const settled = balance <= 0;
   const { int: balInt, dec: balDec } = formatBalance(balance);
 
@@ -267,7 +268,7 @@ export default function DebtorDetail() {
                     settled ? "text-success/80" : "text-destructive/80"
                   )}
                 >
-                  {settled ? "SETTLED" : "BALANCE OWED"}
+                  {inCredit ? "CREDIT" : settled ? "SETTLED" : "BALANCE OWED"}
                 </div>
                 <div
                   className={cn(
@@ -275,16 +276,23 @@ export default function DebtorDetail() {
                     settled ? "text-success" : "text-destructive"
                   )}
                 >
-                  GH₵ {settled ? "0" : balInt}
-                  {!settled && (
-                    <span className="text-[24px] text-destructive/60">
+                  GH₵ {settled && !inCredit ? "0" : balInt}
+                  {(!settled || inCredit) && (
+                    <span
+                      className={cn(
+                        "text-[24px]",
+                        inCredit ? "text-success/60" : "text-destructive/60"
+                      )}
+                    >
                       .{balDec}
                     </span>
                   )}
                 </div>
                 {(settled || daysUnchanged >= 1) && (
                   <div className="text-[13px] font-medium text-muted-foreground">
-                    {settled
+                    {inCredit
+                      ? "Paid in excess — available as credit"
+                      : settled
                       ? "Fully paid"
                       : `Unchanged for ${daysUnchanged} ${daysUnchanged === 1 ? "day" : "days"}`}
                   </div>
@@ -366,7 +374,9 @@ export default function DebtorDetail() {
                         entry.note ? `“${entry.note}”` : null,
                         entry.user?.name ? `recorded by ${entry.user.name}` : null,
                         payment
-                          ? `balance GH₵ ${Math.max(0, entry.running).toLocaleString()}`
+                          ? entry.running < 0
+                            ? `credit GH₵ ${Math.abs(entry.running).toLocaleString()}`
+                            : `balance GH₵ ${entry.running.toLocaleString()}`
                           : null,
                       ]
                         .filter(Boolean)
