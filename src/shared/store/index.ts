@@ -4,7 +4,6 @@ import { authApi } from "@/auth/authApi";
 import { debtorApi } from "@/debtors/debtorApi";
 import { subscriptionApi } from "@/subscription/subscriptionApi";
 import { remindersApi } from "@/reminders/remindersApi";
-import { aiApi } from "@/ai/aiApi";
 import { notificationsApi } from "@/notifications/notificationsApi";
 import { adminApi } from "@/superadmin/adminApi";
 import { auditApi } from "@/superadmin/auditApi";
@@ -17,7 +16,6 @@ export const store = configureStore({
     [debtorApi.reducerPath]: debtorApi.reducer,
     [subscriptionApi.reducerPath]: subscriptionApi.reducer,
     [remindersApi.reducerPath]: remindersApi.reducer,
-    [aiApi.reducerPath]: aiApi.reducer,
     [notificationsApi.reducerPath]: notificationsApi.reducer,
     [adminApi.reducerPath]: adminApi.reducer,
     [auditApi.reducerPath]: auditApi.reducer,
@@ -30,7 +28,6 @@ export const store = configureStore({
       debtorApi.middleware,
       subscriptionApi.middleware,
       remindersApi.middleware,
-      aiApi.middleware,
       notificationsApi.middleware,
       adminApi.middleware,
       auditApi.middleware,
