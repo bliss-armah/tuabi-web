@@ -8,7 +8,7 @@ import {
   useGetDebtorQuery,
   useGetDebtorHistoryQuery,
 } from "@/debtors/debtorApi";
-import { ArrowLeft, Phone, Bell, MapPin, Download, Loader2, Sparkles } from "lucide-react";
+import { ArrowLeft, Phone, Bell, MapPin, Download, Loader2, Pencil, Plus, Sparkles } from "lucide-react";
 import { useState, useEffect } from "react";
 import DebtorModal from "@/debtors/DebtorModal";
 import PaymentModal from "@/debtors/PaymentModal";
@@ -70,6 +70,9 @@ const isToday = (value: string) => {
 const eyebrow = "font-mono text-[11px] font-semibold uppercase tracking-[0.14em]";
 const bordered =
   "rounded-[10px] border border-input text-foreground transition-colors duration-150 hover:bg-accent";
+
+const headerIconAction =
+  "flex h-11 w-11 shrink-0 items-center justify-center gap-2 text-[14px] font-semibold whitespace-nowrap sm:w-auto sm:px-[18px]";
 
 export default function DebtorDetail() {
   const { id } = useParams<{ id: string }>();
@@ -215,51 +218,52 @@ export default function DebtorDetail() {
                 </div>
               </div>
 
-              <div className="flex shrink-0 items-center gap-[10px]">
+              <div className="flex w-full items-center gap-[10px] sm:w-auto sm:shrink-0">
                 <button
                   type="button"
                   onClick={handleExportPdf}
                   disabled={isExporting}
-                  className={cn(
-                    bordered,
-                    "flex flex-1 items-center justify-center gap-2 whitespace-nowrap px-[18px] py-[11px] text-center text-[14px] font-semibold disabled:cursor-not-allowed disabled:opacity-60 sm:flex-none"
-                  )}
+                  className={cn(bordered, headerIconAction, "disabled:cursor-not-allowed disabled:opacity-60")}
                   aria-label="Export statement as PDF"
+                  title="Export PDF"
                 >
                   {isExporting ? (
                     <Loader2 className="h-4 w-4 animate-spin" />
                   ) : (
                     <Download className="h-4 w-4" />
                   )}
-                  {isExporting ? "Preparing..." : "Export PDF"}
+                  <span className="hidden sm:inline">
+                    {isExporting ? "Preparing..." : "Export PDF"}
+                  </span>
                 </button>
                 <button
                   type="button"
                   onClick={openAssistant}
-                  className={cn(
-                    bordered,
-                    "flex flex-1 items-center justify-center gap-2 whitespace-nowrap px-[18px] py-[11px] text-[14px] font-semibold sm:flex-none"
-                  )}
+                  className={cn(bordered, headerIconAction)}
+                  aria-label="Ask the assistant about this debtor"
+                  title="Ask assistant"
                 >
                   <Sparkles className="h-4 w-4" />
-                  Ask assistant
+                  <span className="hidden sm:inline">Ask assistant</span>
                 </button>
                 <button
                   type="button"
                   onClick={() => setIsDebtorModalOpen(true)}
-                  className={cn(
-                    bordered,
-                    "flex-1 whitespace-nowrap px-[18px] py-[11px] text-center text-[14px] font-semibold sm:flex-none"
-                  )}
+                  className={cn(bordered, headerIconAction)}
+                  aria-label="Edit debtor"
+                  title="Edit"
                 >
-                  Edit
+                  <Pencil className="h-4 w-4" />
+                  <span className="hidden sm:inline">Edit</span>
                 </button>
                 <button
                   type="button"
                   onClick={() => setIsPaymentModalOpen(true)}
-                  className="flex-1 whitespace-nowrap rounded-[10px] bg-primary px-[18px] py-[11px] text-center text-[14px] font-bold text-primary-foreground shadow-lg shadow-primary/30 transition-colors duration-150 hover:bg-primary/90 sm:flex-none"
+                  className="flex h-11 min-w-0 flex-1 items-center justify-center gap-2 whitespace-nowrap rounded-[10px] bg-primary px-3 text-[14px] font-bold text-primary-foreground shadow-lg shadow-primary/30 transition-colors duration-150 hover:bg-primary/90 sm:flex-none sm:px-[18px]"
                 >
-                  + Record payment
+                  <Plus className="h-4 w-4" />
+                  <span className="sm:hidden">Payment</span>
+                  <span className="hidden sm:inline">Record payment</span>
                 </button>
               </div>
             </div>
