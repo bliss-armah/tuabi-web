@@ -77,7 +77,7 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-background">
+      <div className="flex min-h-viewport items-center justify-center bg-background">
         <div className="h-16 w-16 animate-spin rounded-full border-4 border-primary border-t-transparent"></div>
       </div>
     );
@@ -260,7 +260,7 @@ function App() {
             <ServerStatusBanner />
             <NotificationEventHandler />
             <Router>
-              <div className="min-h-screen bg-background text-foreground">
+              <div className="min-h-viewport bg-background text-foreground">
                 <SentryRoutes>
                   <Route path="/login" element={<Login />} />
                   <Route path="/register" element={<Navigate to="/login" replace />} />
