@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   useIncrementDebtorAmountMutation,
   useDecrementDebtorAmountMutation,
@@ -36,9 +36,19 @@ import {
   isInCredit,
 } from "@/debtors/utils/debtorUtils";
 
+export type PaymentAction = "add" | "reduce" | "settled";
+
+export interface PaymentFormValues {
+  action: PaymentAction;
+  amount?: number;
+  note?: string;
+}
+
 interface PaymentModalProps {
   isOpen: boolean;
   onClose: () => void;
+  onSaved?: () => void;
+  initialValues?: PaymentFormValues;
   debtor: {
     id: number;
     name: string;
@@ -46,26 +56,34 @@ interface PaymentModalProps {
   };
 }
 
+const toFormState = (values?: PaymentFormValues) => ({
+  action: values?.action ?? ("reduce" as PaymentAction),
+  amount: values?.amount !== undefined ? String(values.amount) : "",
+  note: values?.note ?? "",
+});
+
 export default function PaymentModal({
   isOpen,
   onClose,
+  onSaved,
+  initialValues,
   debtor,
 }: PaymentModalProps) {
   const [incrementDebtorAmount] = useIncrementDebtorAmountMutation();
   const [decrementDebtorAmount] = useDecrementDebtorAmountMutation();
   const [presignUploads] = usePresignUploadsMutation();
-  const [formData, setFormData] = useState({
-    action: "reduce" as "add" | "reduce" | "settled",
-    amount: "",
-    note: "",
-  });
+  const [formData, setFormData] = useState(() => toFormState(initialValues));
   const [imageFiles, setImageFiles] = useState<File[]>([]);
   const [previews, setPreviews] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  useEffect(() => {
+    if (isOpen && initialValues) setFormData(toFormState(initialValues));
+  }, [isOpen, initialValues]);
+
   const resetForm = () => {
-    setFormData({ action: "reduce", amount: "", note: "" });
+    setFormData(toFormState());
     setImageFiles([]);
     setPreviews([]);
   };
@@ -126,6 +144,7 @@ export default function PaymentModal({
       }
 
       resetForm();
+      onSaved?.();
       onClose();
     } catch (error: any) {
       console.error("Payment error:", error);
