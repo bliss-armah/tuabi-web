@@ -6,7 +6,7 @@ export const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center gradient-bg">
+      <div className="min-h-viewport flex items-center justify-center gradient-bg">
         <div className="animate-spin rounded-full h-32 w-32 border-b-4 border-primary-600 border-t-transparent"></div>
       </div>
     );

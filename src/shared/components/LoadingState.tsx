@@ -19,7 +19,7 @@ export default function LoadingState({
   const variantClasses = {
     inline: "space-x-2",
     card: "flex-col space-y-4 py-12",
-    page: "min-h-screen flex-col space-y-4",
+    page: "min-h-viewport flex-col space-y-4",
   };
 
   const textSizeClasses = {

@@ -4,6 +4,14 @@
 
 @custom-variant dark (&:is(.dark *));
 
+@utility min-h-viewport {
+  min-height: 100vh;
+
+  @supports (min-height: 100dvh) {
+    min-height: 100dvh;
+  }
+}
+
 /* ============================================================
    Tuabi design tokens — indigo/violet accent, slate neutrals
    Light + dark, shadcn/ui semantic token system (oklch)
@@ -231,7 +239,7 @@
   }
 
   html {
-    @apply scroll-smooth;
+    @apply scroll-smooth bg-background;
   }
 
   body {

@@ -26,7 +26,7 @@ export default function ErrorState({
   const variantClasses = {
     inline: "py-4",
     card: "py-12",
-    page: "min-h-screen py-16",
+    page: "min-h-viewport py-16",
   };
 
   const iconSizes = {

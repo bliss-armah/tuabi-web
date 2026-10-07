@@ -81,7 +81,7 @@ export default function AcceptInvite() {
 
   if (success) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-background p-4">
+      <div className="flex min-h-viewport items-center justify-center bg-background p-4">
         <div className="w-full max-w-md">
           <Card>
             <CardContent className="flex flex-col items-center text-center">
@@ -103,7 +103,7 @@ export default function AcceptInvite() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background p-4">
+    <div className="flex min-h-viewport items-center justify-center bg-background p-4">
       <div className="w-full max-w-md space-y-6">
         <div className="flex items-center justify-center gap-2">
           <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary text-lg font-bold text-primary-foreground">
