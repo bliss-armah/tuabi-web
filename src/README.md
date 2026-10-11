@@ -54,7 +54,8 @@ src/
 ├── reminders/                # Reminders module
 │   └── remindersApi.ts      # Reminders API
 ├── ai/                      # AI module
-│   └── aiApi.ts             # AI API calls
+│   ├── assistantChat.ts     # AI SDK chat transport for /api/ai/chat
+│   └── toolLabels.ts        # Progress labels for assistant tool calls
 ├── App.tsx                  # Main application component
 ├── main.tsx                 # Application entry point
 └── index.css                # Global styles

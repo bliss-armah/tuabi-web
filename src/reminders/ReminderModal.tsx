@@ -52,6 +52,13 @@ interface ReminderModalProps {
   debtorName?: string;
   debtorAmountOwed?: number;
   onSuccess?: () => void;
+  initialValues?: ReminderFormValues;
+}
+
+export interface ReminderFormValues {
+  title?: string;
+  message?: string;
+  dueDate?: Date;
 }
 
 export default function ReminderModal({
@@ -63,6 +70,7 @@ export default function ReminderModal({
   debtorName,
   debtorAmountOwed,
   onSuccess,
+  initialValues,
 }: ReminderModalProps) {
   const defaultTitle = "Follow up on overdue payment";
   const defaultMessage = (() => {
@@ -116,14 +124,16 @@ export default function ReminderModal({
         });
       } else {
         reset({
-          title: defaultTitle,
-          message: defaultMessage,
-          dueDate: new Date(Date.now() + 24 * 60 * 60 * 1000),
+          title: initialValues?.title ?? defaultTitle,
+          message: initialValues?.message ?? defaultMessage,
+          dueDate:
+            initialValues?.dueDate ??
+            new Date(Date.now() + 24 * 60 * 60 * 1000),
           reminderFrequency: "ONCE",
         });
       }
     }
-  }, [isOpen, mode, reminder, reset, defaultTitle, defaultMessage]);
+  }, [isOpen, mode, reminder, reset, defaultTitle, defaultMessage, initialValues]);
 
   const onSubmit = async (data: FormData) => {
     try {

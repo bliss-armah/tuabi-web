@@ -21,6 +21,7 @@ import type { UserRole } from "@/shared/types/auth";
 import { cn } from "@/shared/utils/utils";
 import NotificationBadge from "@/notifications/NotificationBadge";
 import { ModeToggle } from "./mode-toggle";
+import AIChatWidget from "./AIChatWidget";
 import {
   Avatar,
   AvatarFallback,
@@ -265,6 +266,10 @@ export default function Layout({ children }: LayoutProps) {
           </div>
         </nav>
       </div>
+
+      {user && role !== "SUPER_ADMIN" && workspace && (
+        <AIChatWidget userId={user.id} />
+      )}
     </div>
   );
 }

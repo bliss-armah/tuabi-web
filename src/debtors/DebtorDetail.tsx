@@ -8,7 +8,7 @@ import {
   useGetDebtorQuery,
   useGetDebtorHistoryQuery,
 } from "@/debtors/debtorApi";
-import { ArrowLeft, Phone, Bell, MapPin, Download, Loader2, Pencil, Plus } from "lucide-react";
+import { ArrowLeft, Phone, Bell, MapPin, Download, Loader2, Pencil, Plus, Sparkles } from "lucide-react";
 import { useState, useEffect } from "react";
 import DebtorModal from "@/debtors/DebtorModal";
 import PaymentModal from "@/debtors/PaymentModal";
@@ -22,6 +22,7 @@ import { formatPhoneNumber } from "@/debtors/utils/debtorUtils";
 import DebtorReminders from "@/reminders/DebtorReminders";
 import { useAuth } from "@/shared/hooks/useAuth";
 import { showSuccessToast, showErrorToast } from "@/shared/utils/toastConfig";
+import { openAssistant } from "@/ai/assistantChat";
 
 interface HistoryItem {
   id: number;
@@ -237,6 +238,16 @@ export default function DebtorDetail() {
                 </button>
                 <button
                   type="button"
+                  onClick={openAssistant}
+                  className={cn(bordered, headerIconAction)}
+                  aria-label="Ask the assistant about this debtor"
+                  title="Ask assistant"
+                >
+                  <Sparkles className="h-4 w-4" />
+                  <span className="hidden sm:inline">Ask assistant</span>
+                </button>
+                <button
+                  type="button"
                   onClick={() => setIsDebtorModalOpen(true)}
                   className={cn(bordered, headerIconAction)}
                   aria-label="Edit debtor"
@@ -248,10 +259,11 @@ export default function DebtorDetail() {
                 <button
                   type="button"
                   onClick={() => setIsPaymentModalOpen(true)}
-                  className="flex h-11 min-w-0 flex-1 items-center justify-center gap-2 whitespace-nowrap rounded-[10px] bg-primary px-[18px] text-[14px] font-bold text-primary-foreground shadow-lg shadow-primary/30 transition-colors duration-150 hover:bg-primary/90 sm:flex-none"
+                  className="flex h-11 min-w-0 flex-1 items-center justify-center gap-2 whitespace-nowrap rounded-[10px] bg-primary px-3 text-[14px] font-bold text-primary-foreground shadow-lg shadow-primary/30 transition-colors duration-150 hover:bg-primary/90 sm:flex-none sm:px-[18px]"
                 >
                   <Plus className="h-4 w-4" />
-                  Record payment
+                  <span className="sm:hidden">Payment</span>
+                  <span className="hidden sm:inline">Record payment</span>
                 </button>
               </div>
             </div>
