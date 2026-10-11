@@ -6,7 +6,7 @@ const TOOL_LABELS: Record<string, string> = {
   getCollectionForecast: "Forecasting collections",
   getRiskAlerts: "Checking risk alerts",
   getReminders: "Looking up reminders",
-  getPaymentActivity: "Adding up payments",
+  analyzeTransactions: "Crunching the numbers",
   getStaleDebtors: "Finding debtors who haven't paid",
   getDebtAging: "Checking how old your debts are",
   getRecentActivity: "Checking recent activity",

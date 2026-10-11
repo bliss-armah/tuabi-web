@@ -222,8 +222,8 @@ const topicFollowUps = (message: UIMessage): FollowUp[] => {
   if (outputOf(message, "getDebtAging")) {
     return [ask("Who hasn't paid in 60 days?"), ask("Which debts are overdue?")];
   }
-  if (outputOf(message, "getPaymentActivity")) {
-    return [ask("Compare with the period before"), ask("Who hasn't paid in 30 days?")];
+  if (outputOf(message, "analyzeTransactions")) {
+    return [ask("Who paid me the most?"), ask("Which location pays the most?"), ask("Who hasn't paid in 30 days?")];
   }
   if (outputOf(message, "getOverview")) {
     return [ask("Which debts are overdue?"), ask("How much did I collect last month?"), ask("Who owes me the most?")];

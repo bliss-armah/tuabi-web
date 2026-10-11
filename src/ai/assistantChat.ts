@@ -57,3 +57,21 @@ export const describeChatError = (error: Error) => {
   }
   return "Something went wrong. Please try again.";
 };
+
+export type AssistantFeedback = {
+  messageId: string;
+  rating: "up" | "down";
+  comment?: string;
+  question?: string;
+  answer?: string;
+};
+
+export const sendAssistantFeedback = async (feedback: AssistantFeedback) => {
+  const response = await fetch(`${getBaseUrl()}/ai/feedback`, {
+    method: "POST",
+    credentials: "include",
+    headers: { "Content-Type": "application/json", ...authHeaders() },
+    body: JSON.stringify(feedback),
+  });
+  if (!response.ok) throw new Error("Feedback failed");
+};

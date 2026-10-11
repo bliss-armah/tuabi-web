@@ -35,6 +35,7 @@ import { pageContextFromPath, startersFor } from "@/ai/pageContext";
 import { toolLabel } from "@/ai/toolLabels";
 import AssistantFormHost from "@/ai/AssistantFormHost";
 import MessageDraft from "@/ai/MessageDraft";
+import MessageFeedback from "@/ai/MessageFeedback";
 import { useGetDebtorQuery } from "@/debtors/debtorApi";
 import { Button } from "@/shared/components/ui/button";
 import { Input } from "@/shared/components/ui/input";
@@ -95,6 +96,7 @@ function ToolPartView({ part }: { part: ToolPart }) {
       />
     );
   }
+  if (toolName === "noteUnansweredQuestion") return null;
   if (toolName === "presentMessageDraft") {
     const draft = draftOf(part);
     const rejected = part.state === "output-available" && !part.output?.shown;
@@ -229,7 +231,13 @@ export default function AIChatWidget({ userId }: { userId: number }) {
 
   return (
     <>
-      {activeForm && <AssistantFormHost request={activeForm} onDone={finishForm} />}
+      {activeForm && (
+        <AssistantFormHost
+          key={activeForm.toolCallId ?? `${activeForm.kind}-${activeForm.debtorId}`}
+          request={activeForm}
+          onDone={finishForm}
+        />
+      )}
       <div className="fixed bottom-24 right-4 z-50 lg:bottom-8 lg:right-8">
         {isOpen && (
           <div className="absolute bottom-16 right-0 flex h-130 max-h-[70vh] w-[calc(100vw-2rem)] max-w-md flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-2xl animate-in fade-in slide-in-from-bottom-2">
@@ -262,7 +270,7 @@ export default function AIChatWidget({ userId }: { userId: number }) {
                 </div>
               )}
 
-              {messages.map((message) =>
+              {messages.map((message, index) =>
                 message.role === "user" ? (
                   <div key={message.id} className="flex justify-end">
                     <div className="max-w-[85%] whitespace-pre-wrap rounded-2xl rounded-br-sm bg-primary px-4 py-2.5 text-sm text-primary-foreground">
@@ -271,8 +279,17 @@ export default function AIChatWidget({ userId }: { userId: number }) {
                   </div>
                 ) : (
                   <div key={message.id} className="flex justify-start">
-                    <div className="max-w-[95%] rounded-2xl rounded-bl-sm border border-border bg-card px-4 py-2.5 text-sm text-card-foreground">
-                      <AssistantMessage message={message} />
+                    <div className="max-w-[95%]">
+                      <div className="rounded-2xl rounded-bl-sm border border-border bg-card px-4 py-2.5 text-sm text-card-foreground">
+                        <AssistantMessage message={message} />
+                      </div>
+                      {!(busy && index === messages.length - 1) && messageText(message) && (
+                        <MessageFeedback
+                          messageId={message.id}
+                          question={messageText(messages[index - 1] ?? message)}
+                          answer={messageText(message)}
+                        />
+                      )}
                     </div>
                   </div>
                 ),
