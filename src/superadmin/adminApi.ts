@@ -19,6 +19,7 @@ export interface WorkspaceAdmin {
   billingExempt: boolean;
   memberCount: number;
   debtorCount: number;
+  lastTransactionAt: string | null;
   owner: {
     id: number;
     name: string;
@@ -27,6 +28,51 @@ export interface WorkspaceAdmin {
     status: string;
     createdAt: string;
   };
+}
+
+export interface WorkspaceDetail {
+  workspace: {
+    id: number;
+    name: string;
+    createdAt: string;
+    billingExempt: boolean;
+    subscriptionExpiresAt: string | null;
+    subscriptionActive: boolean;
+  };
+  owner: {
+    id: number;
+    name: string;
+    email: string;
+    phoneNumber: string;
+    status: string;
+    createdAt: string;
+  };
+  usage: {
+    debtorCount: number;
+    reminderCount: number;
+    activeReminderCount: number;
+    transactionsTotal: number;
+    transactionsLast7Days: number;
+    transactionsLast30Days: number;
+    firstTransactionAt: string | null;
+    lastTransactionAt: string | null;
+  };
+  activityByDay: { date: string; count: number }[];
+  members: {
+    userId: number;
+    name: string;
+    status: string;
+    role: "OWNER" | "KEEPER";
+    joinedAt: string;
+    transactionsTotal: number;
+    lastTransactionAt: string | null;
+  }[];
+  subscriptions: {
+    planName: string;
+    status: string;
+    startDate: string;
+    endDate: string;
+  }[];
 }
 
 export interface CreateAdminRequest {
@@ -50,6 +96,9 @@ export const adminApi = createApi({
     getPlatformStats: builder.query<Envelope<PlatformStats>, void>({
       query: () => ({ url: "/admin/stats", method: "GET" }),
       providesTags: ["PlatformStats"],
+    }),
+    getWorkspaceDetail: builder.query<Envelope<WorkspaceDetail>, number>({
+      query: (id) => ({ url: `/admin/workspaces/${id}`, method: "GET" }),
     }),
     getAdmins: builder.query<Envelope<WorkspaceAdmin[]>, void>({
       query: () => ({ url: "/admin/admins", method: "GET" }),
@@ -117,6 +166,7 @@ export const adminApi = createApi({
 
 export const {
   useGetPlatformStatsQuery,
+  useGetWorkspaceDetailQuery,
   useGetAdminsQuery,
   useCreateAdminMutation,
   useResendAdminInviteMutation,

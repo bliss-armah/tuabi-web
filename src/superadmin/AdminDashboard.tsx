@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import {
   Plus,
   Loader2,
@@ -129,6 +130,15 @@ function StatusBadge({ status }: { status: string }) {
   return <Badge variant="secondary">{normalized || "PENDING"}</Badge>;
 }
 
+function timeAgo(value: string) {
+  const elapsed = Date.now() - new Date(value).getTime();
+  if (Number.isNaN(elapsed)) return "—";
+  if (elapsed < 60_000) return "Just now";
+  if (elapsed < 3_600_000) return `${Math.floor(elapsed / 60_000)}m ago`;
+  if (elapsed < 86_400_000) return `${Math.floor(elapsed / 3_600_000)}h ago`;
+  return `${Math.floor(elapsed / 86_400_000)}d ago`;
+}
+
 function formatDate(value: string | null) {
   if (!value) return null;
   const d = new Date(value);
@@ -237,7 +247,14 @@ function WorkspaceRow({ workspace }: { workspace: WorkspaceAdmin }) {
   return (
     <>
     <TableRow>
-      <TableCell className="font-medium">{workspace.workspaceName}</TableCell>
+      <TableCell className="font-medium">
+        <Link
+          to={`/admin/workspaces/${workspace.workspaceId}`}
+          className="hover:underline"
+        >
+          {workspace.workspaceName}
+        </Link>
+      </TableCell>
       <TableCell>
         <div className="flex flex-col">
           <span className="font-medium">{owner.name}</span>
@@ -249,6 +266,11 @@ function WorkspaceRow({ workspace }: { workspace: WorkspaceAdmin }) {
       </TableCell>
       <TableCell>{workspace.memberCount.toLocaleString()}</TableCell>
       <TableCell>{workspace.debtorCount.toLocaleString()}</TableCell>
+      <TableCell className="text-muted-foreground">
+        {workspace.lastTransactionAt
+          ? timeAgo(workspace.lastTransactionAt)
+          : "Never"}
+      </TableCell>
       <TableCell>
         <div className="flex flex-col gap-0.5">
           {workspace.billingExempt ? (
@@ -537,6 +559,7 @@ export default function AdminDashboard() {
                     <TableHead>Status</TableHead>
                     <TableHead>Members</TableHead>
                     <TableHead>Debtors</TableHead>
+                    <TableHead>Last transaction</TableHead>
                     <TableHead>Subscription</TableHead>
                     <TableHead className="text-right">Actions</TableHead>
                   </TableRow>

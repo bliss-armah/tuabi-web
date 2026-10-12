@@ -30,6 +30,7 @@ import HelpSupport from "./profile/HelpSupport";
 import Notifications from "./notifications/Notifications";
 import AdminDashboard from "./superadmin/AdminDashboard";
 import AuditLog from "./superadmin/AuditLog";
+import WorkspaceDetail from "./superadmin/WorkspaceDetail";
 import Team from "./workspace/Team";
 import WorkspaceSettings from "./workspace/WorkspaceSettings";
 import History from "./history/History";
@@ -284,6 +285,14 @@ function App() {
                     element={
                       <ProtectedLayout allowedRoles={["SUPER_ADMIN"]}>
                         <AdminDashboard />
+                      </ProtectedLayout>
+                    }
+                  />
+                  <Route
+                    path="/admin/workspaces/:id"
+                    element={
+                      <ProtectedLayout allowedRoles={["SUPER_ADMIN"]}>
+                        <WorkspaceDetail />
                       </ProtectedLayout>
                     }
                   />
