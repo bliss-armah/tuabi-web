@@ -28,7 +28,6 @@ src/
 ├── auth/                     # Authentication module
 │   ├── Login.tsx            # Login page
 │   ├── Register.tsx         # Registration page
-│   ├── OTPVerification.tsx  # OTP verification
 │   ├── ForgotPassword.tsx   # Password reset
 │   ├── ResetPassword.tsx    # Password reset confirmation
 │   └── authApi.ts           # Auth API calls
@@ -80,7 +79,7 @@ src/
 
 ### Authentication
 
-- **OTP Verification**: Phone number-based authentication with OTP
+- **Password Login**: Email or phone number with password; OTP is used only for invite activation and password reset
 - **Password Management**: Secure password reset and change functionality
 - **Session Management**: Automatic token handling and user state management
 

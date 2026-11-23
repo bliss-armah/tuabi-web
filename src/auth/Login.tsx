@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { useRequestOTPMutation } from "./authApi";
+import { useLoginMutation } from "./authApi";
 import { Phone, Lock, Mail, Eye, EyeOff, Loader2 } from "lucide-react";
 import { Button } from "@/shared/components/ui/button";
 import { Input } from "@/shared/components/ui/input";
@@ -19,7 +19,7 @@ type Mode = "phone" | "email";
 
 export default function Login() {
   const navigate = useNavigate();
-  const [requestOTP] = useRequestOTPMutation();
+  const [login] = useLoginMutation();
 
   const [mode, setMode] = useState<Mode>("phone");
   const [phoneNumber, setPhoneNumber] = useState("");
@@ -42,18 +42,13 @@ export default function Login() {
     setIsLoading(true);
 
     try {
-      const response = await requestOTP({ identifier, password }).unwrap();
+      const response = await login({ identifier, password }).unwrap();
       if (response.success) {
-        navigate("/otp-verification", {
-          state: {
-            identifier,
-            channel: response.data?.channel ?? (mode === "phone" ? "SMS" : "EMAIL"),
-            maskedTarget: response.data?.maskedTarget,
-            expiryMinutes: response.data?.expiryMinutes,
-          },
-        });
+        localStorage.setItem("user", JSON.stringify(response.data.user));
+        localStorage.setItem("authToken", response.data.token);
+        navigate("/");
       } else {
-        setError(response.message || "Failed to send verification code");
+        setError(response.message || "Sign in failed. Please try again.");
       }
     } catch (err: any) {
       setError(err?.data?.message || "Sign in failed. Please try again.");
@@ -196,15 +191,9 @@ export default function Login() {
                 </Link>
               </div>
 
-              <p className="text-xs text-muted-foreground">
-                {mode === "phone"
-                  ? "We'll text a 6-digit code to this number."
-                  : "We'll email a 6-digit code to this address."}
-              </p>
-
               <Button type="submit" className="w-full" disabled={isLoading}>
                 {isLoading && <Loader2 className="h-4 w-4 animate-spin" />}
-                {isLoading ? "Sending code..." : "Continue"}
+                {isLoading ? "Signing in..." : "Sign in"}
               </Button>
             </form>
           </CardContent>

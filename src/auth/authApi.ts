@@ -40,15 +40,6 @@ export interface AcceptInviteRequest {
   password: string;
 }
 
-export interface VerifyOTPRequest {
-  identifier: string;
-  otpCode: string;
-}
-
-export interface ResendOTPRequest {
-  identifier: string;
-}
-
 export interface ChangePasswordRequest {
   oldPassword: string;
   newPassword: string;
@@ -99,29 +90,13 @@ export const authApi = createApi({
   baseQuery: baseQueryWithErrorHandling,
   tagTypes: ["Auth"],
   endpoints: (builder) => ({
-    requestOTP: builder.mutation<OTPChallengeResponse, LoginRequest>({
+    login: builder.mutation<LoginResponse, LoginRequest>({
       query: (credentials) => ({
-        url: "/auth/request-otp",
-        method: "POST",
-        body: credentials,
-      }),
-    }),
-
-    verifyOTP: builder.mutation<LoginResponse, VerifyOTPRequest>({
-      query: (credentials) => ({
-        url: "/auth/verify-otp",
+        url: "/auth/login",
         method: "POST",
         body: credentials,
       }),
       invalidatesTags: ["Auth"],
-    }),
-
-    resendOTP: builder.mutation<OTPChallengeResponse, ResendOTPRequest>({
-      query: (data) => ({
-        url: "/auth/resend-otp",
-        method: "POST",
-        body: data,
-      }),
     }),
 
     // Invited users activate their account (set password) and are logged in
@@ -217,9 +192,7 @@ export const authApi = createApi({
 });
 
 export const {
-  useRequestOTPMutation,
-  useVerifyOTPMutation,
-  useResendOTPMutation,
+  useLoginMutation,
   useAcceptInviteMutation,
   useRequestPasswordResetMutation,
   useVerifyResetCodeMutation,

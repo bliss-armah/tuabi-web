@@ -15,7 +15,6 @@ import { subscriptionApi } from "./subscription/subscriptionApi";
 import { historyApi } from "./history/historyApi";
 import Login from "./auth/Login";
 import AcceptInvite from "./auth/AcceptInvite";
-import OTPVerification from "./auth/OTPVerification";
 import ForgotPassword from "./auth/ForgotPassword";
 import ResetPassword from "./auth/ResetPassword";
 import Dashboard from "./dashboard/Dashboard";
@@ -266,7 +265,6 @@ function App() {
                   <Route path="/login" element={<Login />} />
                   <Route path="/register" element={<Navigate to="/login" replace />} />
                   <Route path="/accept-invite" element={<AcceptInvite />} />
-                  <Route path="/otp-verification" element={<OTPVerification />} />
                   <Route path="/forgot-password" element={<ForgotPassword />} />
                   <Route path="/reset-password" element={<ResetPassword />} />
 

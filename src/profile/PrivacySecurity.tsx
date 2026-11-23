@@ -72,7 +72,8 @@ export default function PrivacySecurity() {
                   Secure Authentication
                 </h3>
                 <p className="text-sm text-muted-foreground">
-                  We use OTP-based authentication and JWT tokens to ensure
+                  We use password authentication, one-time codes for account
+                  activation and password resets, and JWT tokens to ensure
                   secure access to your account.
                 </p>
               </div>
